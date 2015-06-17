@@ -1,7 +1,8 @@
 __author__ = 'Paul Finch'
 
-import wx
-
+"""
+This piece of code sets up up a frame to display the simple front menu
+"""
 import wx
 
 ########################################################################
@@ -37,9 +38,11 @@ class FrontFrame(wx.Frame):
 		wx.Frame.__init__(self, None, title='H&S Audit App', size = (500, 350))
 		panel = FrontPanel(self)
 
+		self.Centre()
 		self.Show()
 
 if __name__ == '__main__':
 	app = wx.App(False)
+
 	frame = FrontFrame()
 	app.MainLoop()
