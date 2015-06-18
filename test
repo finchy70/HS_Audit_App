@@ -1,0 +1,31 @@
+import wx
+import sqlite3
+
+class CreateAudit(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.lblname = wx.StaticText(self, label="Site Name :", pos=(20,60))
+        self.sitename = wx.TextCtrl(self, value="Enter site name here.", pos=(150, 60), size=(140,-1))
+        self.lblname = wx.StaticText(self, label="4 Digit Job Number", pos=(20,120))
+        self.jobnumber = wx.TextCtrl(self, pos=(150, 120), size=(140,-1))
+
+        con = sqlite3.connect("hs_audit.sqlite")
+        cur = con.cursor()
+        con.row_factory = lambda cursor, row: row[0]
+        ids = con.execute('SELECT engineer FROM T1').fetchall()
+        myList = ids
+        self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
+        self.engineername = wx.ComboBox(self, pos=(150, 180), size=(140,-1)).SetItems(myList)
+
+
+        self.Show()
+
+        self.button =wx.Button(self, label="Save", pos=(150, 400))
+
+
+app = wx.App(False)
+frame = wx.Frame(None, title = 'Create New Audit')
+panel = CreateAudit(frame)
+frame.Centre()
+frame.Show()
+app.MainLoop()
