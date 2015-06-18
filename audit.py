@@ -29,7 +29,8 @@ class FrontPanel(wx.Panel):
         # This opens the Create New Audit frame.
     def create_audit(self, event):
         print 'create audit'
-        self.Close(True)
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
         frame = FrontAudit()
         app.MainLoop()
 
@@ -130,6 +131,11 @@ class HvAudit(Questions):
     def read_questions(self):
         pass
 """
+
+def onClose(self, event):
+   frame = self.GetParent()
+   frame.Close()
+
 #This kicks everything off.
 if __name__ == '__main__':
     app = wx.App(False)
