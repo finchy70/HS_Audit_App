@@ -60,7 +60,7 @@ class CreateAudit(wx.Panel):
         self.lblname = wx.StaticText(self, label="Site Name :", pos=(20,60))
         self.sitename = wx.TextCtrl(self, value="Enter site name here.", pos=(150, 60), size=(140,-1))
         self.lblname = wx.StaticText(self, label="4 Digit Job Number", pos=(20,120))
-        self.jobnumber = wx.TextCtrl(self, pos=(150, 120), size=(140,-1))
+        self.jobnumber = wx.TextCtrl(self, value="Omit 'EPS-' and '-year'", pos=(150, 120), size=(140,-1))
 
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.cursor()
