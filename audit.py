@@ -48,7 +48,8 @@ class FrontPanel(wx.Panel):
 
     # To be completed
     def close_app(self, event):
-        option = 4
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Destroy() #This then closes frame removing the main menu and terminates app.
         exit('Good Bye')
 
 
@@ -57,10 +58,10 @@ class CreateAudit(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        self.lblname = wx.StaticText(self, label="Site Name :", pos=(20,60))
-        self.sitename = wx.TextCtrl(self, value="Enter site name here.", pos=(150, 60), size=(140,-1))
-        self.lblname = wx.StaticText(self, label="4 Digit Job Number", pos=(20,120))
-        self.jobnumber = wx.TextCtrl(self, pos=(150, 120), size=(140,-1))
+        self.lblname = wx.StaticText(self, label = "Site Name :", pos=(20,60))
+        self.sitename = wx.TextCtrl(self, value = "Enter site name here.", pos=(150, 60), size=(140,-1))
+        self.lblname = wx.StaticText(self, label = "Job Number", pos=(20,120))
+        self.jobnumber = wx.TextCtrl(self, value = "4 digit number only.", pos=(150, 120), size=(140,-1))
 
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.cursor()
@@ -136,7 +137,7 @@ def onClose(self, event):
    frame = self.GetParent()
    frame.Close()
 
-#This kicks everything off.
+#This kicks everything off by calling frame and starting the apps loop.
 if __name__ == '__main__':
     app = wx.App(False)
     frame = FrontFrame()
