@@ -3,6 +3,7 @@ __author__ = 'Paul Finch'
 #This piece of code sets up a frame to display the simple front menu
 import wx
 import sqlite3
+import datetime as dt
 
 #This is the front main menu panel
 class FrontPanel(wx.Panel):
@@ -28,7 +29,6 @@ class FrontPanel(wx.Panel):
 
         # This opens the Create New Audit frame.
     def create_audit(self, event):
-        print 'create audit'
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
         frame = FrontAudit()
@@ -59,20 +59,39 @@ class CreateAudit(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.lblname = wx.StaticText(self, label = "Site Name :", pos=(20,60))
-        self.sitename = wx.TextCtrl(self, value = "Enter site name here.", pos=(150, 60), size=(140,-1))
-        self.lblname = wx.StaticText(self, label = "Job Number", pos=(20,120))
-        self.jobnumber = wx.TextCtrl(self, value = "4 digit number only.", pos=(150, 120), size=(140,-1))
+        self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
+        self.lblname = wx.StaticText(self, label = "Job Number (4 digits only)", pos=(20,120))
+        self.job_number = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
 
         con = sqlite3.connect("hs_audit.sqlite")
-        cur = con.cursor()
         con.row_factory = lambda cursor, row: row[0]
         ids = con.execute('SELECT engineer FROM T1').fetchall()
         myList = ids
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
-        self.engineername = wx.ComboBox(self, pos=(150, 180), size=(140,-1)).SetItems(myList)
-
-        self.button =wx.Button(self, label="Save", pos=(150, 400))
+        self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1)).SetItems(myList)
+        self.save_button =wx.Button(self, label="Save", pos=(150, 400))
+        self.save_button.Bind(wx.EVT_BUTTON, self.save_details)
         self.Show()
+
+    def save_details(self, event):
+        audit_site = self.site_name.GetValue()
+        audit_engineer = self.engineer_name.GetValue()
+        audit_jobnumber = self.job_number.GetValue()
+        con = sqlite3.connect("hs_audit.sqlite")
+        cur = con.execute('SELECT max(audit_id) FROM T2')
+        max_audit_id = cur.fetchone()[0]
+        cur = con.execute('SELECT max(audit_ver) FROM T3')
+        max_audit_ver = cur.fetchone()[0]
+        audit_ver = max_audit_ver
+        audit_id = max_audit_id + 1
+        audit_date = dt.datetime.today().strftime("%d/%m/%Y")
+        print "The Audit ID is %r and the date is %s." % (audit_id, audit_date)
+        print "The job number is EPS-%s-15 and the site is %s." % (audit_jobnumber, audit_site)
+        print "The version of the audit is version %r." %(audit_ver)
+        print "The engineer is %s" % (audit_engineer)
+
+
+
 
 #This creates the frame for the Main Menu
 class FrontFrame(wx.Frame):
