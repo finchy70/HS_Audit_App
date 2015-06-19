@@ -62,26 +62,27 @@ class CreateAudit(wx.Panel):
         self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
         self.lblname = wx.StaticText(self, label = "Job Number (4 digits only)", pos=(20,120))
         self.job_number = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
-
         con = sqlite3.connect("hs_audit.sqlite")
         con.row_factory = lambda cursor, row: row[0]
-        ids = con.execute('SELECT engineer FROM T1').fetchall()
-        myList = ids
+        myList = con.execute('SELECT engineer FROM T1').fetchall()
+        con.close()
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
         self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1)).SetItems(myList)
-        self.save_button =wx.Button(self, label="Save", pos=(150, 400))
-        self.save_button.Bind(wx.EVT_BUTTON, self.save_details)
+        self.save_button = wx.Button(self, label="Save", pos=(150, 400))
+        self.save_button.Bind(wx.EVT_BUTTON, self.save_audit_details)
         self.Show()
 
-    def save_details(self, event):
-        audit_site = self.site_name.GetValue()
-        audit_engineer = self.engineer_name.GetValue()
+        #######audit_engineer = self.engineer_name.GetCurrentSelection#####
+    def save_audit_details(self, event):
         audit_jobnumber = self.job_number.GetValue()
+        audit_site = self.site_name
+        audit_engineer = self.engineer_name.GetCurrentString()
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.execute('SELECT max(audit_id) FROM T2')
         max_audit_id = cur.fetchone()[0]
         cur = con.execute('SELECT max(audit_ver) FROM T3')
         max_audit_ver = cur.fetchone()[0]
+        con.close()
         audit_ver = max_audit_ver
         audit_id = max_audit_id + 1
         audit_date = dt.datetime.today().strftime("%d/%m/%Y")
