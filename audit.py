@@ -113,7 +113,7 @@ class CreateEngineerPanel(wx.Panel):
 
     def save_engineer_details(self, event):
         """
-        #########save engineer details here#######
+        #########save engineer details here########
         audit_jobnumber = self.job_number.GetValue()
         audit_site = self.site_name.GetValue()
         audit_engineer = self.engineer_name.GetValue()
