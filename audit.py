@@ -68,15 +68,15 @@ class CreateAudit(wx.Panel):
         myList = con.execute('SELECT engineer FROM T1').fetchall()
         con.close()
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
-        self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1)).SetItems(myList)
+        self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1), choices = myList)
         self.save_button = wx.Button(self, label="Save", pos=(150, 400))
         self.save_button.Bind(wx.EVT_BUTTON, self.save_audit_details)
         self.Show()
 
     def save_audit_details(self, event):
         audit_jobnumber = self.job_number.GetValue()
-        audit_site = self.site_name
-        #audit_engineer = self.engineer_name.GetCurrentString()
+        audit_site = self.site_name.GetValue()
+        audit_engineer = self.engineer_name.GetValue()
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.execute('SELECT max(audit_id) FROM T2')
         max_audit_id = cur.fetchone()[0]
@@ -89,7 +89,12 @@ class CreateAudit(wx.Panel):
         print "The Audit ID is %r and the date is %s." % (audit_id, audit_date)
         print "The job number is EPS-%s-15 and the site is %s." % (audit_jobnumber, audit_site)
         print "The version of the audit is version %r." %(audit_ver)
-        #print "The engineer is %s" % (audit_engineer)
+        print "The engineer is %s" % (audit_engineer)
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.execute('INSERT INTO T2 (engineer, site, job_no, audit_ver) VALUES (audit_engineer, audit_site, audit_jobnumber, audit_ver)')
+
+        con.close()
+
 
 
 
