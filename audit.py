@@ -70,7 +70,7 @@ class ViewColleaguesPanel(wx.Panel):
         main_sizer.Add(wx.StaticText(self, label = "Name"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
         main_sizer.Add(wx.StaticText(self, label = "eMail"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
         main_sizer.Add(wx.StaticText(self, label = "Role"), 20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
-        #main_sizer = wx.FlexGridSizer(max_row_id, 3, 5, 5)
+        #main_sizer = wx.FlexGridSizer(max_row_id, 3, 5, 5)#
         self.SetSizer(main_sizer)
         self.Show()
 
