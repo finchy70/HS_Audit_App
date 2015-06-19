@@ -58,6 +58,7 @@ class CreateAudit(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        self.engineer = ""
         self.lblname = wx.StaticText(self, label = "Site Name :", pos=(20,60))
         self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
         self.lblname = wx.StaticText(self, label = "Job Number (4 digits only)", pos=(20,120))
@@ -72,11 +73,10 @@ class CreateAudit(wx.Panel):
         self.save_button.Bind(wx.EVT_BUTTON, self.save_audit_details)
         self.Show()
 
-        #######audit_engineer = self.engineer_name.GetCurrentSelection#####
     def save_audit_details(self, event):
         audit_jobnumber = self.job_number.GetValue()
         audit_site = self.site_name
-        audit_engineer = self.engineer_name.GetCurrentString()
+        #audit_engineer = self.engineer_name.GetCurrentString()
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.execute('SELECT max(audit_id) FROM T2')
         max_audit_id = cur.fetchone()[0]
@@ -89,7 +89,7 @@ class CreateAudit(wx.Panel):
         print "The Audit ID is %r and the date is %s." % (audit_id, audit_date)
         print "The job number is EPS-%s-15 and the site is %s." % (audit_jobnumber, audit_site)
         print "The version of the audit is version %r." %(audit_ver)
-        print "The engineer is %s" % (audit_engineer)
+        #print "The engineer is %s" % (audit_engineer)
 
 
 
