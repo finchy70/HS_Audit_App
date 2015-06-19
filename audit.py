@@ -66,10 +66,10 @@ class ViewColleaguesPanel(wx.Panel):
         con = sqlite3.connect("hs_audit.sqlite")
         cur = con.execute('SELECT max(rowid) FROM T1')
         max_row_id = cur.fetchone()[0]
-        main_sizer = wx.GridSizer(1, 3, 0, 0)
-        main_sizer.Add(wx.StaticText(self, label = "Name"), 0,wx.EXPAND | wx.ALIGN_LEFT)
-        main_sizer.Add(wx.StaticText(self, label = "eMail"), 0,wx.EXPAND | wx.ALIGN_CENTER)
-        main_sizer.Add(wx.StaticText(self, label = "Role"), 0,wx.EXPAND | wx.ALIGN_RIGHT)
+        main_sizer = wx.GridSizer(1, 3, 200, 200)
+        main_sizer.Add(wx.StaticText(self, label = "Name"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
+        main_sizer.Add(wx.StaticText(self, label = "eMail"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
+        main_sizer.Add(wx.StaticText(self, label = "Role"), 20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
         #main_sizer = wx.FlexGridSizer(max_row_id, 3, 5, 5)
         self.SetSizer(main_sizer)
         self.Show()
@@ -188,10 +188,9 @@ class FrontAddEngineer(wx.Frame):
 class ViewColleagues(wx.Frame):
     def __init__(self):
         """Constructor"""
-        wx.Frame.__init__(self, None, title="View Collegues.")
+        wx.Frame.__init__(self, None, title="View Collegues.", size = (1000, 1000))
         panel = ViewColleaguesPanel(self)
-
-        self.Maximize(True)
+        self.Centre()
         self.Show()
 
 
