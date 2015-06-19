@@ -32,13 +32,12 @@ class FrontPanel(wx.Panel):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
         frame = FrontAudit()
-        app.MainLoop()
 
         # To be completed
     def create_engineer(self, event):
-        option = 2
-        print "Create engineer"
-        exit()
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = AddEngineer()
 
     # To be completed
     def view_audit(self, event):
@@ -58,7 +57,6 @@ class CreateAudit(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        self.engineer = ""
         self.lblname = wx.StaticText(self, label = "Site Name :", pos=(20,60))
         self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
         self.lblname = wx.StaticText(self, label = "Job Number (4 digits only)", pos=(20,120))
@@ -91,12 +89,35 @@ class CreateAudit(wx.Panel):
         print "The version of the audit is version %r." %(audit_ver)
         print "The engineer is %s" % (audit_engineer)
         con = sqlite3.connect("hs_audit.sqlite")
-        con.execute('INSERT INTO T2 (engineer, site, job_no, audit_ver) VALUES (audit_engineer, audit_site, audit_jobnumber, audit_ver)')
-
+        con.execute('INSERT INTO T2 VALUES (?,?,?,?,?,?)',
+                    (audit_id, audit_engineer, audit_date, audit_site, audit_jobnumber, audit_ver))
+        con.commit()
         con.close()
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        exit()
 
+class CreateEngineerPanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.role_list = ["Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
+        self.text = wx.StaticText(self, label = "Employees Name :", pos=(20,60))
+        self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
+        self.text = wx.StaticText(self, label = "eMail Address :", pos=(20,120))
+        self.engineer_email = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
+        self.text = wx.StaticText(self, label = "Role :", pos=(20,180))
+        self.engineer_role = wx.ComboBox(self, pos=(170, 180), size=(170,-1), choices = role_list)
+        self.save_button = wx.Button(self, label="Save", pos=(150, 400))
+        self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
+        self.Show()
 
-
+    def save_engineer_details(self, event):
+        """
+        #########save engineer details here#######
+        audit_jobnumber = self.job_number.GetValue()
+        audit_site = self.site_name.GetValue()
+        audit_engineer = self.engineer_name.GetValue()
+        """
 
 
 #This creates the frame for the Main Menu
@@ -114,6 +135,15 @@ class FrontAudit(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title='Create New Audit', size = (400, 500))
+        panel = CreateAudit(self)
+
+        self.Centre()
+        self.Show()
+
+class FrontAddEngineer(wx.Frame):
+    def __init__(self):
+        """Constructor"""
+        wx.Frame.__init__(self, None, title='Create New Employee', size = (400, 500))
         panel = CreateAudit(self)
 
         self.Centre()
