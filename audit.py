@@ -5,6 +5,8 @@ import wx
 import sqlite3
 import datetime as dt
 
+# -*- coding: utf_8 -*-
+
 #This is the front main menu panel
 class FrontPanel(wx.Panel):
 
@@ -88,7 +90,10 @@ class CreateAudit(wx.Panel):
         self.job_number = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
         con = sqlite3.connect("hs_audit.sqlite")
         con.row_factory = lambda cursor, row: row[0]
-        myList = con.execute('SELECT engineer FROM T1').fetchall()
+        #myList = ""
+        #myList1 = con.execute('SELECT engineer FROM T1').fetchall()
+        #myList2 = con.execute('SELECT active FROM T1').fetchall()
+        myList = con.execute("SELECT engineer FROM T1 WHERE active = 'True'").fetchall()
         con.close()
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
         self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1), choices = myList)
