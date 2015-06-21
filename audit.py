@@ -7,6 +7,9 @@ import datetime as dt
 
 # -*- coding: utf_8 -*-
 
+
+########Panel Set Ups###########
+
 #This is the front main menu panel
 class FrontMenuPanel(wx.Panel):
 
@@ -30,32 +33,22 @@ class FrontMenuPanel(wx.Panel):
         main_sizer.AddStretchSpacer()
         self.SetSizer(main_sizer)
 
-        # This opens the Create New Audit frame.
+
     def create_audit(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
         frame = FrontAudit()
 
-        # To be completed
     def manage_colleagues(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
         frame = FrontManageColleague()
 
-    # To be completed
     def view_audit(self, event):
-        option = 3
-        print "View Audit"
-        exit()
-
-    """
-    def view_colleague(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = ViewColleagues()
-    """
+        frame = ViewPreviousAudit()
 
-    # To be completed
     def close_app(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Destroy() #This then closes frame removing the main menu and terminates app.
@@ -75,8 +68,40 @@ class AddColleaguesPanel(wx.Panel):
         self.SetSizer(main_sizer)
         self.Show()
 
+class ManageColleaguePanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        btn1 = wx.Button(self, label="Add New Colleague", size=(420, 60))
+        btn1.Bind(wx.EVT_BUTTON, self.add_new_colleague)
+        btn2 = wx.Button(self, label="Edit Existing Colleagues", size=(420, 60))
+        btn2.Bind(wx.EVT_BUTTON, self.existing_colleague)
+        btn3 = wx.Button(self, label="Back To Main Menu", size=(420, 60))
+        btn3.Bind(wx.EVT_BUTTON, self.main_menu)
 
+        main_sizer.AddStretchSpacer()
+        main_sizer.Add(btn1, 0, wx.CENTER)
+        main_sizer.Add(btn2, 0, wx.CENTER)
+        main_sizer.Add(btn3, 0, wx.CENTER)
+        main_sizer.AddStretchSpacer()
+        self.SetSizer(main_sizer)
 
+    def add_new_colleague(self, event):
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = AddColleaguePanel()
+
+        # To be completed
+    def existing_colleague(self, event):
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = FrontManageColleague()
+
+    # To be completed
+    def main_menu(self, event):
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = FrontMenuFrame()
 
 #This creates the panel for the Create New Audit Menu
 class CreateAuditPanel(wx.Panel):
@@ -89,9 +114,6 @@ class CreateAuditPanel(wx.Panel):
         self.job_number = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
         con = sqlite3.connect("hs_audit.sqlite")
         con.row_factory = lambda cursor, row: row[0]
-        #myList = ""
-        #myList1 = con.execute('SELECT engineer FROM T1').fetchall()
-        #myList2 = con.execute('SELECT active FROM T1').fetchall()
         myList = con.execute("SELECT engineer FROM T1 WHERE active = 1").fetchall()
         con.close()
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
@@ -113,20 +135,25 @@ class CreateAuditPanel(wx.Panel):
         audit_ver = max_audit_ver
         audit_id = max_audit_id + 1
         audit_date = dt.datetime.today().strftime("%d/%m/%Y")
-        print "The Audit ID is %r and the date is %s." % (audit_id, audit_date)
-        print "The job number is EPS-%s-15 and the site is %s." % (audit_job_number, audit_site)
-        print "The version of the audit is version %r." %(audit_ver)
-        print "The engineer is %s" % (audit_engineer)
+        ####Database####
         con = sqlite3.connect("hs_audit.sqlite")
         con.execute('INSERT INTO T2 VALUES (?,?,?,?,?,?)',
                     (audit_id, audit_engineer, audit_date, audit_site, audit_job_number, audit_ver))
         con.commit()
         con.close()
+        ####Kill Frame####
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
         exit()
 
-class ManageColleaguePanel(wx.Panel):
+class PreviousAuditPanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        exit(0)
+
+
+#Creates Panel for adding a new colleague.
+class NewColleaguePanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         role_list = ["Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
@@ -154,7 +181,7 @@ class ManageColleaguePanel(wx.Panel):
 
 
 
-
+###########Frame Setups############
 
 #This creates the frame for the Main Menu
 class FrontMenuFrame(wx.Frame):
@@ -162,10 +189,6 @@ class FrontMenuFrame(wx.Frame):
         """Constructor"""
         wx.Frame.__init__(self, None, title='H&S Audit App', size = (500, 350))
         panel = FrontMenuPanel(self)
-        con = sqlite3.connect("hs_audit.sqlite")
-        con.row_factory = lambda cursor, row: row[0]
-        myList = con.execute('SELECT engineer FROM T1').fetchall()
-        con.close()
         self.Centre()
         self.Show()
 
@@ -175,24 +198,30 @@ class FrontAudit(wx.Frame):
         """Constructor"""
         wx.Frame.__init__(self, None, title='Create New Audit', size = (400, 500))
         panel = CreateAuditPanel(self)
+        self.Centre()
+        self.Show()
 
+class AddNewColleague(wx.Frame):
+    def __init__(self):
+        """Constructor"""
+        wx.Frame.__init__(self, None, title='Add New Employee', size = (400, 500))
+        panel = NewColleaguePanel(self)
         self.Centre()
         self.Show()
 
 class FrontManageColleague(wx.Frame):
     def __init__(self):
         """Constructor"""
-        wx.Frame.__init__(self, None, title='Add New Employee', size = (400, 500))
+        wx.Frame.__init__(self, None, title="Manage Colleagues.", size = (500, 350))
         panel = ManageColleaguePanel(self)
-
         self.Centre()
         self.Show()
 
-class ViewColleagues(wx.Frame):
+class ViewPreviousAudit(wx.Frame):
     def __init__(self):
         """Constructor"""
-        wx.Frame.__init__(self, None, title="View Collegues.", size = (1000, 1000))
-        panel = AddColleaguesPanel(self)
+        wx.Frame.__init__(self, None, title="View Previous Audit", size = (1000, 1000))
+        panel = PreviousAuditPanel(self)
         self.Centre()
         self.Show()
 
