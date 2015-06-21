@@ -25,7 +25,7 @@ class FrontPanel(wx.Panel):
         btn5.Bind(wx.EVT_BUTTON, self.close_app)
 
         main_sizer.AddStretchSpacer()
-        #main_sizer.Add(btn1, 0, wx.CENTER)
+        #main_sizer.Add(btn1, 0, wx.CENTER)#
         main_sizer.Add(btn2, 0, wx.CENTER)
         main_sizer.Add(btn3, 0, wx.CENTER)
         main_sizer.Add(btn4, 0, wx.CENTER)
