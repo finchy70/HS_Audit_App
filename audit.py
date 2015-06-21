@@ -54,20 +54,6 @@ class FrontMenuPanel(wx.Panel):
         frame.Destroy() #This then closes frame removing the main menu and terminates app.
         exit('Good Bye')
 
-class AddColleaguesPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        con = sqlite3.connect("hs_audit.sqlite")
-        cur = con.execute('SELECT max(rowid) FROM T1')
-        max_row_id = cur.fetchone()[0]
-        main_sizer = wx.GridSizer(1, 3, 200, 200)
-        main_sizer.Add(wx.StaticText(self, label = "Name"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
-        main_sizer.Add(wx.StaticText(self, label = "eMail"),20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
-        main_sizer.Add(wx.StaticText(self, label = "Role"), 20, wx.ALIGN_TOP | wx.ALIGN_CENTER)
-        #main_sizer = wx.FlexGridSizer(max_row_id, 3, 5, 5)#
-        self.SetSizer(main_sizer)
-        self.Show()
-
 class ManageColleaguePanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -89,7 +75,7 @@ class ManageColleaguePanel(wx.Panel):
     def add_new_colleague(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = AddColleaguePanel()
+        frame = FrontAddNewColleague()
 
         # To be completed
     def existing_colleague(self, event):
@@ -153,7 +139,7 @@ class PreviousAuditPanel(wx.Panel):
 
 
 #Creates Panel for adding a new colleague.
-class NewColleaguePanel(wx.Panel):
+class AddNewColleaguePanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         role_list = ["Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
@@ -163,12 +149,19 @@ class NewColleaguePanel(wx.Panel):
         self.engineer_email = wx.TextCtrl(self, pos=(170, 120), size=(170,-1))
         self.text = wx.StaticText(self, label = "Role :", pos=(20,180))
         self.engineer_role = wx.ComboBox(self, pos=(170, 180), size=(170,-1), choices = role_list)
-        self.save_button = wx.Button(self, label="Save", pos=(150, 400))
+        self.back_button = wx.Button(self, label="Back", pos=(150, 400))
+        self.back_button.Bind(wx.EVT_BUTTON, self.cancel_new_colleague)
+        self.save_button = wx.Button(self, label="Save", pos=(250, 400))
         self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
         self.Show()
 
-    def save_engineer_details(self, event):
 
+    def cancel_new_colleague(self, event):
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = FrontManageColleague()
+
+    def save_engineer_details(self, event):
         new_engineer = self.engineer_name.GetValue()
         new_email = self.engineer_email.GetValue()
         new_role = self.engineer_role.GetValue()
@@ -177,8 +170,6 @@ class NewColleaguePanel(wx.Panel):
         con.commit()
         con.close()
         frame = FrontMenuFrame()
-
-
 
 
 ###########Frame Setups############
@@ -201,11 +192,11 @@ class FrontAudit(wx.Frame):
         self.Centre()
         self.Show()
 
-class AddNewColleague(wx.Frame):
+class FrontAddNewColleague(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title='Add New Employee', size = (400, 500))
-        panel = NewColleaguePanel(self)
+        panel = AddNewColleaguePanel(self)
         self.Centre()
         self.Show()
 
