@@ -1,6 +1,6 @@
 __author__ = 'Paul Finch'
 
-#This piece of code sets up a frame to display the simple front menu
+
 import wx
 import sqlite3
 import datetime as dt
@@ -13,23 +13,20 @@ class FrontPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        #btn1 = wx.Button(self, label = "PLACE HOLDER", size=(420, 60))
-        #btn1.Bind(wx.EVT_BUTTON, self.view_colleague)
-        btn2 = wx.Button(self, label='Create New Audit', size=(420, 60))
-        btn2.Bind(wx.EVT_BUTTON, self.create_audit)
-        btn3 = wx.Button(self, label="Manage Colleagues", size=(420, 60))
-        btn3.Bind(wx.EVT_BUTTON, self.manage_colleagues)
-        btn4 = wx.Button(self, label="View Previous Audit", size=(420, 60))
-        btn4.Bind(wx.EVT_BUTTON, self.view_audit)
-        btn5 = wx.Button(self, label="Close", size=(420, 60))
-        btn5.Bind(wx.EVT_BUTTON, self.close_app)
+        btn1 = wx.Button(self, label='Create New Audit', size=(420, 60))
+        btn1.Bind(wx.EVT_BUTTON, self.create_audit)
+        btn2 = wx.Button(self, label="Manage Colleagues", size=(420, 60))
+        btn2.Bind(wx.EVT_BUTTON, self.manage_colleagues)
+        btn3 = wx.Button(self, label="View Previous Audit", size=(420, 60))
+        btn3.Bind(wx.EVT_BUTTON, self.view_audit)
+        btn4 = wx.Button(self, label="Close", size=(420, 60))
+        btn4.Bind(wx.EVT_BUTTON, self.close_app)
 
         main_sizer.AddStretchSpacer()
-        #main_sizer.Add(btn1, 0, wx.CENTER)#
+        main_sizer.Add(btn1, 0, wx.CENTER)
         main_sizer.Add(btn2, 0, wx.CENTER)
         main_sizer.Add(btn3, 0, wx.CENTER)
         main_sizer.Add(btn4, 0, wx.CENTER)
-        main_sizer.Add(btn5, 0, wx.CENTER)
         main_sizer.AddStretchSpacer()
         self.SetSizer(main_sizer)
 
@@ -104,7 +101,7 @@ class CreateAudit(wx.Panel):
         self.Show()
 
     def save_audit_details(self, event):
-        audit_jobnumber = self.job_number.GetValue()
+        audit_job_number = self.job_number.GetValue()
         audit_site = self.site_name.GetValue()
         audit_engineer = self.engineer_name.GetValue()
         con = sqlite3.connect("hs_audit.sqlite")
@@ -117,12 +114,12 @@ class CreateAudit(wx.Panel):
         audit_id = max_audit_id + 1
         audit_date = dt.datetime.today().strftime("%d/%m/%Y")
         print "The Audit ID is %r and the date is %s." % (audit_id, audit_date)
-        print "The job number is EPS-%s-15 and the site is %s." % (audit_jobnumber, audit_site)
+        print "The job number is EPS-%s-15 and the site is %s." % (audit_job_number, audit_site)
         print "The version of the audit is version %r." %(audit_ver)
         print "The engineer is %s" % (audit_engineer)
         con = sqlite3.connect("hs_audit.sqlite")
         con.execute('INSERT INTO T2 VALUES (?,?,?,?,?,?)',
-                    (audit_id, audit_engineer, audit_date, audit_site, audit_jobnumber, audit_ver))
+                    (audit_id, audit_engineer, audit_date, audit_site, audit_job_number, audit_ver))
         con.commit()
         con.close()
         frame = self.GetParent() #This assigns parent frame to frame.
