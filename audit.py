@@ -8,7 +8,7 @@ import datetime as dt
 # -*- coding: utf_8 -*-
 
 #This is the front main menu panel
-class FrontPanel(wx.Panel):
+class FrontMenuPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -61,7 +61,7 @@ class FrontPanel(wx.Panel):
         frame.Destroy() #This then closes frame removing the main menu and terminates app.
         exit('Good Bye')
 
-class ViewColleaguesPanel(wx.Panel):
+class AddColleaguesPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         con = sqlite3.connect("hs_audit.sqlite")
@@ -79,7 +79,7 @@ class ViewColleaguesPanel(wx.Panel):
 
 
 #This creates the panel for the Create New Audit Menu
-class CreateAudit(wx.Panel):
+class CreateAuditPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -149,7 +149,7 @@ class ManageColleaguePanel(wx.Panel):
         con.execute('INSERT INTO T1 VALUES (?,?,?,?)', (new_engineer, new_email, new_role, 1))
         con.commit()
         con.close()
-        frame = FrontFrame()
+        frame = FrontMenuFrame()
 
 
 
@@ -157,11 +157,11 @@ class ManageColleaguePanel(wx.Panel):
 
 
 #This creates the frame for the Main Menu
-class FrontFrame(wx.Frame):
+class FrontMenuFrame(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title='H&S Audit App', size = (500, 350))
-        panel = FrontPanel(self)
+        panel = FrontMenuPanel(self)
         con = sqlite3.connect("hs_audit.sqlite")
         con.row_factory = lambda cursor, row: row[0]
         myList = con.execute('SELECT engineer FROM T1').fetchall()
@@ -174,7 +174,7 @@ class FrontAudit(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title='Create New Audit', size = (400, 500))
-        panel = CreateAudit(self)
+        panel = CreateAuditPanel(self)
 
         self.Centre()
         self.Show()
@@ -182,7 +182,7 @@ class FrontAudit(wx.Frame):
 class FrontManageColleague(wx.Frame):
     def __init__(self):
         """Constructor"""
-        wx.Frame.__init__(self, None, title='Create New Employee', size = (400, 500))
+        wx.Frame.__init__(self, None, title='Add New Employee', size = (400, 500))
         panel = ManageColleaguePanel(self)
 
         self.Centre()
@@ -192,7 +192,7 @@ class ViewColleagues(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title="View Collegues.", size = (1000, 1000))
-        panel = ViewColleaguesPanel(self)
+        panel = AddColleaguesPanel(self)
         self.Centre()
         self.Show()
 
@@ -243,5 +243,5 @@ def onClose(self, event):
 #This kicks everything off by calling frame and starting the apps loop.
 if __name__ == '__main__':
     app = wx.App(False)
-    frame = FrontFrame()
+    frame = FrontMenuFrame()
     app.MainLoop()
