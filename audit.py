@@ -40,7 +40,12 @@ class FrontMenuPanel(wx.Panel):
     def manage_colleagues(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 300, "Manage Colleagues", ManageColleaguePanel)
+        frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
+
+    def view_audit(self, event):
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 300, "Process Leavers", ProcessLeaversPanelPanel)
 
     def view_audit(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
@@ -61,13 +66,15 @@ class ManageColleaguePanel(wx.Panel):
         btn1.Bind(wx.EVT_BUTTON, self.add_new_colleague)
         btn2 = wx.Button(self, label="Edit Existing Colleagues", size=(420, 60))
         btn2.Bind(wx.EVT_BUTTON, self.existing_colleague)
-        btn3 = wx.Button(self, label="Back To Main Menu", size=(420, 60))
-        btn3.Bind(wx.EVT_BUTTON, self.main_menu)
-
+        btn3 = wx.Button(self, label="View Leavers", size=(420, 60))
+        btn3.Bind(wx.EVT_BUTTON, self.leaver_colleague)
+        btn4 = wx.Button(self, label="Back To Main Menu", size=(420, 60))
+        btn4.Bind(wx.EVT_BUTTON, self.main_menu)
         main_sizer.AddStretchSpacer()
         main_sizer.Add(btn1, 0, wx.CENTER)
         main_sizer.Add(btn2, 0, wx.CENTER)
         main_sizer.Add(btn3, 0, wx.CENTER)
+        main_sizer.Add(btn4, 0, wx.CENTER)
         main_sizer.AddStretchSpacer()
         self.SetSizer(main_sizer)
 
@@ -81,7 +88,12 @@ class ManageColleaguePanel(wx.Panel):
     def existing_colleague(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(300, 700, "Manage Existing Colleague", ManageExistingColleaguePanel)
+        frame = SetUpFrame(500, 500, "Manage Existing Colleague", ManageExistingColleaguePanel)
+
+    def leaver_colleague(self, event):
+	    frame = self.GetParent()  # This assigns parent frame to frame.
+	    frame.Close()  # This then closes frame removing the main menu.
+	    frame = SetUpFrame(500, 500, "View Leavers", LeaverColleaguePanel)
 
     # To be completed
     def main_menu(self, event):
@@ -165,7 +177,7 @@ class AddNewColleaguePanel(wx.Panel):
     def cancel_new_colleague(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 350, "Manage Colleagues", ManageColleaguePanel)
+        frame = SetUpFrame(500, 450, "Manage Colleagues", ManageColleaguePanel)
 
     def save_engineer_details(self, event):
         new_engineer = self.engineer_name.GetValue()
@@ -175,25 +187,48 @@ class AddNewColleaguePanel(wx.Panel):
         con.execute('INSERT INTO T1 VALUES (?,?,?,?)', (new_engineer, new_email, new_role, 1))
         con.commit()
         con.close()
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
         frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
 
 
 class ManageExistingColleaguePanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer1 = wx.BoxSizer(wx.VERTICAL)
+        main_sizer2 = wx.BoxSizer(wx.VERTICAL)
+        top_sizer.AddStretchSpacer()
+        top_sizer.Add(main_sizer1)
+        top_sizer.Add(main_sizer2)
+        top_sizer.AddStretchSpacer()
         con = sqlite3.connect("hs_audit.sqlite")
         con.text_factory = str
         cur = con.cursor()
         cur.execute("SELECT engineer FROM T1 WHERE active = 1")
         myList = [r[0] for r in cur.fetchall()]
         con.close()
-        main_sizer.AddStretchSpacer()
-        for n in range(0, len(myList)):
-            main_sizer.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 25)), 0, wx.CENTER)
-            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-            main_sizer.AddStretchSpacer()
-        self.SetSizer(main_sizer)
+        main_sizer1.AddStretchSpacer()
+        main_sizer2.AddStretchSpacer()
+        if len(myList) % 2 == 1:
+	        for n in range(0, len(myList)-1, 2):
+	            main_sizer1.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	            main_sizer2.Add(wx.Button(self, label=str(myList[(n+1)]), id=n+1, size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	        main_sizer1.Add(wx.Button(self, label=str(myList[(n+2)]), id=n+2, size=(200, 30)), 0, wx.CENTER)
+	        #self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        else:
+	        for n in range(0, len(myList), 2):
+	            main_sizer1.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	            main_sizer2.Add(wx.Button(self, label=str(myList[(n+1)]), id=n+1, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        main_sizer1.AddStretchSpacer()
+        main_sizer2.AddStretchSpacer()
+        self.SetSizer(top_sizer)
 
     def detect_on_button(self, event):
         #event.Skip()
@@ -202,8 +237,69 @@ class ManageExistingColleaguePanel(wx.Panel):
         print colleague_row_id
 
 
-# topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
+class LeaverColleaguePanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer1 = wx.BoxSizer(wx.VERTICAL)
+        main_sizer2 = wx.BoxSizer(wx.VERTICAL)
+        top_sizer.AddStretchSpacer()
+        top_sizer.Add(main_sizer1)
+        top_sizer.Add(main_sizer2)
+        top_sizer.AddStretchSpacer()
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT rowid, engineer FROM T1 WHERE active = 0")
+        my_list_id = [lists[0] for lists in cur.fetchall()]
+        #print my_list_id
+        print my_list_id
+        con.close()
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT rowid, engineer FROM T1 WHERE active = 0")
+        my_list_col = [lists[1] for lists in cur.fetchall()]
+        print my_list_col
+        con.close()
+        main_sizer1.AddStretchSpacer()
+        main_sizer2.AddStretchSpacer()
 
+        if len(my_list_id) == 1:
+	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        elif len(my_list_id) == 2:
+	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	        main_sizer2.Add(wx.Button(self, label=str(my_list_col[1]), id=int(my_list_id[(1)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        elif len(my_list_id) % 2 == 1:
+	        for n in range(0, len(my_list_col)-1, 2):
+	            main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	            main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[(n+2)]), id=int(my_list_id[(n+2)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        else:
+			for n in range(0, len(my_list_id)-1, 2):
+				main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
+				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+				main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
+				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        main_sizer1.AddStretchSpacer()
+        main_sizer2.AddStretchSpacer()
+        self.SetSizer(top_sizer)
+
+    def detect_on_button(self, event):
+        #event.Skip()
+        colleague_id = event.GetId()
+        colleague_row_id = colleague_id + 1
+        print colleague_row_id
 ###########Frame Setups############
 
 # This creates the frame for the all menus.
@@ -260,3 +356,4 @@ if __name__ == '__main__':
     app = wx.App(False)
     frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
     app.MainLoop()
+
