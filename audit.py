@@ -190,9 +190,16 @@ class ManageExistingColleaguePanel(wx.Panel):
         con.close()
         main_sizer.AddStretchSpacer()
         for n in range(0, len(myList)):
-            main_sizer.Add(wx.Button(self, label=str(myList[(n)]), size=(200, 35)), 0, wx.CENTER)
-        main_sizer.AddStretchSpacer()
+            main_sizer.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 25)), 0, wx.CENTER)
+            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            main_sizer.AddStretchSpacer()
         self.SetSizer(main_sizer)
+
+    def detect_on_button(self, event):
+        #event.Skip()
+        colleague_id = event.GetId()
+        colleague_row_id = colleague_id + 1
+        print colleague_row_id
 
 
 # topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
