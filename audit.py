@@ -1,15 +1,15 @@
-__author__ = 'Paul Finch'
+# -*- coding: utf_8 -*
 
+__author__ = 'Paul Finch'
 
 import wx
 import sqlite3
 import datetime as dt
 
-# -*- coding: utf_8 -*-
 
 
-########Panel Set Ups###########
 
+##########Panel Set Ups###########
 #This is the front main menu panel
 class FrontMenuPanel(wx.Panel):
 
@@ -37,17 +37,17 @@ class FrontMenuPanel(wx.Panel):
     def create_audit(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontAudit()
+        frame = SetUpFrame(400, 500, "Create New Audit", CreateAuditPanel)
 
     def manage_colleagues(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontManageColleague()
+        frame = SetUpFrame(500, 300, "Manage Colleagues", ManageColleaguePanel)
 
     def view_audit(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = ViewPreviousAudit()
+        frame = SetUpFrame(1000, 1000, "View Previous Audit", PreviousAuditPanel)
 
     def close_app(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
@@ -75,19 +75,19 @@ class ManageColleaguePanel(wx.Panel):
     def add_new_colleague(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontAddNewColleague()
+        frame = SetUpFrame(400, 500,"Add New Colleague", AddNewColleaguePanel)
 
         # To be completed
     def existing_colleague(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontManageColleague()
+        frame = SetUpFrame(300, 700, "Manage Existing Colleague", ManageExistingColleaguePanel)
 
     # To be completed
     def main_menu(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontMenuFrame()
+        frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
 
 #This creates the panel for the Create New Audit Menu
 class CreateAuditPanel(wx.Panel):
@@ -104,9 +104,11 @@ class CreateAuditPanel(wx.Panel):
         con.close()
         self.lblname = wx.StaticText(self, label="Select Engineer :", pos=(20,180))
         self.engineer_name = wx.ComboBox(self, pos=(170, 180), size=(170,-1), choices = myList)
-        self.save_button = wx.Button(self, label="Save", pos=(150, 400))
+        self.save_button = wx.Button(self, label="Save", pos=(250, 400))
         self.save_button.Bind(wx.EVT_BUTTON, self.save_audit_details)
-        self.Show()
+        self.cancel_button = wx.Button(self, label="Cancel", pos=(150, 400))
+        self.cancel_button.Bind(wx.EVT_BUTTON, self.cancel_audit_details)
+
 
     def save_audit_details(self, event):
         audit_job_number = self.job_number.GetValue()
@@ -132,6 +134,11 @@ class CreateAuditPanel(wx.Panel):
         frame.Close() #This then closes frame removing the main menu.
         exit()
 
+    def cancel_audit_details(self, event):
+        frame = self.GetParent() #This assigns parent frame to frame.
+        frame.Close() #This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+
 class PreviousAuditPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -142,7 +149,7 @@ class PreviousAuditPanel(wx.Panel):
 class AddNewColleaguePanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        role_list = ["Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
+        role_list = ["Management", "Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
         self.text = wx.StaticText(self, label = "Employees Name :", pos=(20,60))
         self.engineer_name = wx.TextCtrl(self, pos=(170, 60), size=(170,-1))
         self.text = wx.StaticText(self, label = "e-Mail Address :", pos=(20,120))
@@ -153,13 +160,13 @@ class AddNewColleaguePanel(wx.Panel):
         self.back_button.Bind(wx.EVT_BUTTON, self.cancel_new_colleague)
         self.save_button = wx.Button(self, label="Save", pos=(250, 400))
         self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
-        self.Show()
+        #self.Show()
 
 
     def cancel_new_colleague(self, event):
         frame = self.GetParent() #This assigns parent frame to frame.
         frame.Close() #This then closes frame removing the main menu.
-        frame = FrontManageColleague()
+        frame = SetUpFrame(500, 350, "Manage Colleagues", ManageColleaguePanel)
 
     def save_engineer_details(self, event):
         new_engineer = self.engineer_name.GetValue()
@@ -169,52 +176,38 @@ class AddNewColleaguePanel(wx.Panel):
         con.execute('INSERT INTO T1 VALUES (?,?,?,?)', (new_engineer, new_email, new_role, 1))
         con.commit()
         con.close()
-        frame = FrontMenuFrame()
+        frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+
+
+class ManageExistingColleaguePanel(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT engineer FROM T1")
+        myList = [r[0] for r in cur.fetchall()]
+        con.close()
+        main_sizer.AddStretchSpacer()
+        for n in range(0, len(myList)):
+            main_sizer.Add(wx.Button(self, wx.CENTER, label = str(myList[(n)]), size = (200, 35)))
+        main_sizer.AddStretchSpacer()
+        self.SetSizer(main_sizer)
+
 
 
 ###########Frame Setups############
 
-#This creates the frame for the Main Menu
-class FrontMenuFrame(wx.Frame):
-    def __init__(self):
-        """Constructor"""
-        wx.Frame.__init__(self, None, title='H&S Audit App', size = (500, 350))
-        panel = FrontMenuPanel(self)
+#This creates the frame for the all menus.
+class SetUpFrame(wx.Frame):
+    def __init__(self, fwide, fhigh, ftitle, Panel):#Pass frame height, width, name, and panel.
+        wx.Frame.__init__(self, None, title= ftitle, size = (fwide, fhigh))
+        panel = Panel(self)
         self.Centre()
         self.Show()
 
-#This creates the frame for the Create New Audit Menu.
-class FrontAudit(wx.Frame):
-    def __init__(self):
-        """Constructor"""
-        wx.Frame.__init__(self, None, title='Create New Audit', size = (400, 500))
-        panel = CreateAuditPanel(self)
-        self.Centre()
-        self.Show()
-
-class FrontAddNewColleague(wx.Frame):
-    def __init__(self):
-        """Constructor"""
-        wx.Frame.__init__(self, None, title='Add New Employee', size = (400, 500))
-        panel = AddNewColleaguePanel(self)
-        self.Centre()
-        self.Show()
-
-class FrontManageColleague(wx.Frame):
-    def __init__(self):
-        """Constructor"""
-        wx.Frame.__init__(self, None, title="Manage Colleagues.", size = (500, 350))
-        panel = ManageColleaguePanel(self)
-        self.Centre()
-        self.Show()
-
-class ViewPreviousAudit(wx.Frame):
-    def __init__(self):
-        """Constructor"""
-        wx.Frame.__init__(self, None, title="View Previous Audit", size = (1000, 1000))
-        panel = PreviousAuditPanel(self)
-        self.Centre()
-        self.Show()
 
 
 """
@@ -256,12 +249,9 @@ class HvAudit(Questions):
         pass
 """
 
-def onClose(self, event):
-   frame = self.GetParent()
-   frame.Close()
 
-#This kicks everything off by calling frame and starting the apps loop.
+#This kicks everything off by calling frame and starting the app loop.
 if __name__ == '__main__':
     app = wx.App(False)
-    frame = FrontMenuFrame()
+    frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
     app.MainLoop()
