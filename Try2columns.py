@@ -251,26 +251,40 @@ class LeaverColleaguePanel(wx.Panel):
         con.text_factory = str
         cur = con.cursor()
         cur.execute("SELECT rowid, engineer FROM T1 WHERE active = 0")
-        myListID = [r[0] for r in cur.fetchall()]
-        myList = [s[1] for s in cur.fetchall()]
-        print myListID
-        print myList
+        lists = cur.fetchall()
+        print lists
+        my_list_id = [lists[0] for lists in cur.fetchall()]
+        my_list_col = [lists[1] for lists in cur.fetchall()]
+        print my_list_id
+        print my_list_col
         con.close()
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
-        if len(myList) % 2 == 1:
-	        for n in range(0, len(myList)-1, 2):
-	            main_sizer1.Add(wx.Button(self, label=str(myList[n]), id=int(myListID[(n)]), size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	            main_sizer2.Add(wx.Button(self, label=str(myList[n+1]), id=n+1, size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	        main_sizer1.Add(wx.Button(self, label=str(myList[(n+2)]), id=n+2, size=(200, 30)), 0, wx.CENTER)
+
+        if len(lists) == 1:
+	        main_sizer1.Add(wx.Button(self, label=lists[0], id=lists[1], size=(200, 30)), 0, wx.CENTER)
 	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        elif len(my_list_id) == 2:
+	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	        main_sizer2.Add(wx.Button(self, label=str(my_list_col[1]), id=int(my_list_id[(1)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        elif len(my_list_id) % 2 == 1:
+	        for n in range(0, len(my_list_col)-1, 2):
+	            main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	            main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
+	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[(n+2)]), id=int(my_list_id[(n+2)]), size=(200, 30)), 0, wx.CENTER)
+	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
         else:
-			for n in range(0, len(myList)-1, 2):
-				main_sizer1.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
+			for n in range(0, len(my_list_id)-1, 2):
+				main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
 				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-				main_sizer2.Add(wx.Button(self, label=str(myList[(n+1)]), id=n+1, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
+				main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
 				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         main_sizer1.AddStretchSpacer()
