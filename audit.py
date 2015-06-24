@@ -242,7 +242,7 @@ class ManageExistingColleaguePanel(wx.Panel):
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
         self.SetSizer(top_sizer)
-        self.back_button = wx.Button(self, label="Back", id=999, pos=(220, 500))
+        self.back_button = wx.Button(self, label="Back", id=999, pos=(400, 500))
         self.back_button.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
     def detect_on_button(self, event):
@@ -294,7 +294,7 @@ class EditColleaguePanel(wx.Panel):
     def cancel_new_colleague(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 450, "Manage Colleagues", ManageColleaguePanel)
+        frame = SetUpFrame(600, 600, "Manage Existing Colleague", ManageExistingColleaguePanel)
 
     def save_engineer_details(self, event):
         new_engineer = self.engineer_name.GetValue()
@@ -347,13 +347,23 @@ class LeaverColleaguePanel(wx.Panel):
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
         self.SetSizer(top_sizer)
-
+        self.back_button = wx.Button(self, label="Back", id=999, pos=(400, 500))
+        self.back_button.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
     def detect_on_button(self, event):
         #event.Skip()
-        global leaver_colleague_id
-        leaver_colleague_id = event.GetId()
-        frame = SetUpFrame(500, 600, "Reactivate Leaver", ReactivateLeaverPanel)
+        global colleague_row_id
+        colleague_row_id = event.GetId()
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        if colleague_row_id == 999:
+            frame = self.GetParent()  # This assigns parent frame to frame.
+            frame.Close()  # This then closes frame removing the main menu.
+            frame = SetUpFrame(480, 450, "Manage Colleagues", ManageColleaguePanel)
+
+        else:
+            frame = self.GetParent()  # This assigns parent frame to frame.
+            frame.Close()  # This then closes frame removing the main menu.
+            frame = SetUpFrame(440, 600, "Edit Colleague", EditColleaguePanel)
 
 
 class ReactivateLeaverPanel(wx.Panel):
@@ -373,7 +383,7 @@ class ReactivateLeaverPanel(wx.Panel):
         self.text = wx.StaticText(self, label="Employees Name :    %s" % (final_list[0]), pos=(20, 60))
         self.text = wx.StaticText(self, label="e-Mail Address :    %s" % (final_list[1]), pos=(20, 120))
         self.text = wx.StaticText(self, label="Role :              %s" % (final_list[2]), pos=(20, 180))
-        self.text = wx.StaticText(self, label="Current Employee (1=Yes 2=No):", pos=(20, 240))
+        self.text = wx.StaticText(self, label="Current Employee (1=Yes 0=No):", pos=(20, 240))
         self.active_eng = wx.ComboBox(self, pos=(350, 240), size=(50, -1), choices=active_list, value=final_list[3])
         self.back_button = wx.Button(self, label="Back", pos=(220, 500))
         self.back_button.Bind(wx.EVT_BUTTON, self.cancel_new_colleague)
