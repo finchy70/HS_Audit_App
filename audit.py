@@ -5,7 +5,25 @@ __author__ = 'Paul Finch'
 import wx
 import sqlite3
 import datetime as dt
+from itertools import chain
 
+def get_columns(state):
+    global my_list_col
+    global my_list_id
+    my_list_col = ""
+    my_list_id = ""
+    con = sqlite3.connect("hs_audit.sqlite")
+    con.text_factory = str
+    cur = con.cursor()
+    cur.execute("SELECT rowid FROM T1 WHERE active =?", (state))
+    my_list_id = [lists[0] for lists in cur.fetchall()]
+    con.close()
+    con = sqlite3.connect("hs_audit.sqlite")
+    con.text_factory = str
+    cur = con.cursor()
+    cur.execute("SELECT engineer FROM T1 WHERE active =?", (state))
+    my_list_col = [lists[0] for lists in cur.fetchall()]
+    con.close()
 
 
 
@@ -41,11 +59,6 @@ class FrontMenuPanel(wx.Panel):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
         frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
-
-    def view_audit(self, event):
-        frame = self.GetParent()  # This assigns parent frame to frame.
-        frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 300, "Process Leavers", ProcessLeaversPanelPanel)
 
     def view_audit(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
@@ -88,12 +101,12 @@ class ManageColleaguePanel(wx.Panel):
     def existing_colleague(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 500, "Manage Existing Colleague", ManageExistingColleaguePanel)
+        frame = SetUpFrame(600, 600, "Manage Existing Colleague", ManageExistingColleaguePanel)
 
     def leaver_colleague(self, event):
-	    frame = self.GetParent()  # This assigns parent frame to frame.
-	    frame.Close()  # This then closes frame removing the main menu.
-	    frame = SetUpFrame(500, 500, "View Leavers", LeaverColleaguePanel)
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(600, 600, "View Leavers", LeaverColleaguePanel)
 
     # To be completed
     def main_menu(self, event):
@@ -177,7 +190,7 @@ class AddNewColleaguePanel(wx.Panel):
     def cancel_new_colleague(self, event):
         frame = self.GetParent()  # This assigns parent frame to frame.
         frame.Close()  # This then closes frame removing the main menu.
-        frame = SetUpFrame(500, 450, "Manage Colleagues", ManageColleaguePanel)
+        frame = SetUpFrame(480, 450, "Manage Colleagues", ManageColleaguePanel)
 
     def save_engineer_details(self, event):
         new_engineer = self.engineer_name.GetValue()
@@ -202,39 +215,99 @@ class ManageExistingColleaguePanel(wx.Panel):
         top_sizer.Add(main_sizer1)
         top_sizer.Add(main_sizer2)
         top_sizer.AddStretchSpacer()
-        con = sqlite3.connect("hs_audit.sqlite")
-        con.text_factory = str
-        cur = con.cursor()
-        cur.execute("SELECT engineer FROM T1 WHERE active = 1")
-        myList = [r[0] for r in cur.fetchall()]
-        con.close()
+        get_columns("1")
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
-        if len(myList) % 2 == 1:
-	        for n in range(0, len(myList)-1, 2):
-	            main_sizer1.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	            main_sizer2.Add(wx.Button(self, label=str(myList[(n+1)]), id=n+1, size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	        main_sizer1.Add(wx.Button(self, label=str(myList[(n+2)]), id=n+2, size=(200, 30)), 0, wx.CENTER)
-	        #self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        if len(my_list_id) == 1:
+            main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 40)), 2, wx.CENTER)
+            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+
+        elif len(my_list_id) % 2 == 1:
+            for n in range(0, len(my_list_col)-1, 2):
+                main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+                main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            main_sizer1.Add(wx.Button(self, label=str(my_list_col[(len(my_list_id)-1)]), id=int(my_list_id[(n+2)]), size=(200, 40)), 2, wx.CENTER)
+            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         else:
-	        for n in range(0, len(myList), 2):
-	            main_sizer1.Add(wx.Button(self, label=str(myList[(n)]), id=n, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	            main_sizer2.Add(wx.Button(self, label=str(myList[(n+1)]), id=n+1, size=(200, 30)), 0, wx.ALIGN_CENTER_VERTICAL)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            for n in range(0, len(my_list_id)-1, 2):
+                main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+                main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
         self.SetSizer(top_sizer)
+        self.back_button = wx.Button(self, label="Back", id=999, pos=(220, 500))
+        self.back_button.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
     def detect_on_button(self, event):
         #event.Skip()
-        colleague_id = event.GetId()
-        colleague_row_id = colleague_id + 1
-        print colleague_row_id
+        global colleague_row_id
+        colleague_row_id = event.GetId()
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        if colleague_row_id == 999:
+            frame = self.GetParent()  # This assigns parent frame to frame.
+            frame.Close()  # This then closes frame removing the main menu.
+            frame = SetUpFrame(480, 450, "Manage Colleagues", ManageColleaguePanel)
+
+        else:
+            frame = self.GetParent()  # This assigns parent frame to frame.
+            frame.Close()  # This then closes frame removing the main menu.
+            frame = SetUpFrame(440, 600, "Edit Colleague", EditColleaguePanel)
+
+
+class EditColleaguePanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT * FROM T1 WHERE rowid='%s'" % (colleague_row_id))
+        myList = [[str(item) for item in results] for results in cur.fetchall()]
+        con.close()
+        ####The following lines extract the nested list from the list
+        final_list = []
+        while myList:
+            final_list.extend(myList.pop(0))
+
+        role_list = ["Management", "Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
+        active_list = ["1", "0"]
+        self.text = wx.StaticText(self, label="Employees Name :", pos=(20, 60))
+        self.engineer_name = wx.TextCtrl(self, pos=(150, 60), size=(250,-1), value = final_list[0])
+        self.text = wx.StaticText(self, label="e-Mail Address :", pos=(20, 120))
+        self.engineer_email = wx.TextCtrl(self, pos=(150, 120), value = final_list[1], size=(250,-1))
+        self.text = wx.StaticText(self, label="Role :", pos=(20, 180))
+        self.engineer_role = wx.ComboBox(self, pos=(230, 180), size=(170, -1), choices=role_list, value=final_list[2])
+        self.text = wx.StaticText(self, label="Current Employee (1=Yes 2=No):", pos=(20, 240))
+        self.active_eng = wx.ComboBox(self, pos=(350, 240), size=(50, -1), choices=active_list, value=final_list[3])
+        self.back_button = wx.Button(self, label="Back", pos=(220, 500))
+        self.back_button.Bind(wx.EVT_BUTTON, self.cancel_new_colleague)
+        self.save_button = wx.Button(self, label="Save", pos=(320, 500))
+        self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
+        self.Show()
+
+    def cancel_new_colleague(self, event):
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 450, "Manage Colleagues", ManageColleaguePanel)
+
+    def save_engineer_details(self, event):
+        new_engineer = self.engineer_name.GetValue()
+        new_email = self.engineer_email.GetValue()
+        new_role = self.engineer_role.GetValue()
+        new_active = self.active_eng.GetValue()
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.execute("UPDATE T1 SET engineer='%s', email='%s', role='%s', active='%s' WHERE rowid='%s'" % (new_engineer, new_email, new_role, new_active, colleague_row_id))
+        con.commit()
+        con.close()
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
 
 
 class LeaverColleaguePanel(wx.Panel):
@@ -247,59 +320,87 @@ class LeaverColleaguePanel(wx.Panel):
         top_sizer.Add(main_sizer1)
         top_sizer.Add(main_sizer2)
         top_sizer.AddStretchSpacer()
-        con = sqlite3.connect("hs_audit.sqlite")
-        con.text_factory = str
-        cur = con.cursor()
-        cur.execute("SELECT rowid, engineer FROM T1 WHERE active = 0")
-        my_list_id = [lists[0] for lists in cur.fetchall()]
-        #print my_list_id
-        print my_list_id
-        con.close()
-        con = sqlite3.connect("hs_audit.sqlite")
-        con.text_factory = str
-        cur = con.cursor()
-        cur.execute("SELECT rowid, engineer FROM T1 WHERE active = 0")
-        my_list_col = [lists[1] for lists in cur.fetchall()]
-        print my_list_col
-        con.close()
+        get_columns("0")
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
 
         if len(my_list_id) == 1:
-	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 30)), 0, wx.CENTER)
-	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-
-        elif len(my_list_id) == 2:
-	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 30)), 0, wx.CENTER)
-	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	        main_sizer2.Add(wx.Button(self, label=str(my_list_col[1]), id=int(my_list_id[(1)]), size=(200, 30)), 0, wx.CENTER)
-	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            main_sizer1.Add(wx.Button(self, label=str(my_list_col[0]), id=int(my_list_id[(0)]), size=(200, 40)), 2, wx.CENTER)
+            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         elif len(my_list_id) % 2 == 1:
-	        for n in range(0, len(my_list_col)-1, 2):
-	            main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	            main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
-	            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-	        main_sizer1.Add(wx.Button(self, label=str(my_list_col[(n+2)]), id=int(my_list_id[(n+2)]), size=(200, 30)), 0, wx.CENTER)
-	        self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            for n in range(0, len(my_list_col)-1, 2):
+                main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+                main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            main_sizer1.Add(wx.Button(self, label=str(my_list_col[(len(my_list_id)-1)]), id=int(my_list_id[(n+2)]), size=(200, 40)), 2, wx.CENTER)
+            self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         else:
-			for n in range(0, len(my_list_id)-1, 2):
-				main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 30)), 0, wx.CENTER)
-				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
-				main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 30)), 0, wx.CENTER)
-				self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+            for n in range(0, len(my_list_id)-1, 2):
+                main_sizer1.Add(wx.Button(self, label=str(my_list_col[n]), id=int(my_list_id[(n)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
+                main_sizer2.Add(wx.Button(self, label=str(my_list_col[n+1]), id=int(my_list_id[(n+1)]), size=(200, 40)), 2, wx.CENTER)
+                self.Bind(wx.EVT_BUTTON, self.detect_on_button)
 
         main_sizer1.AddStretchSpacer()
         main_sizer2.AddStretchSpacer()
         self.SetSizer(top_sizer)
 
+
     def detect_on_button(self, event):
         #event.Skip()
-        colleague_id = event.GetId()
-        colleague_row_id = colleague_id + 1
-        print colleague_row_id
+        global leaver_colleague_id
+        leaver_colleague_id = event.GetId()
+        frame = SetUpFrame(500, 600, "Reactivate Leaver", ReactivateLeaverPanel)
+
+
+class ReactivateLeaverPanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT * FROM T1 WHERE rowid='%s'" % (leaver_colleague_id))
+        myList = [[str(item) for item in results] for results in cur.fetchall()]
+        con.close()
+        final_list = []
+        while myList:
+            final_list.extend(myList.pop(0))
+
+        active_list = ["1", "0"]
+        self.text = wx.StaticText(self, label="Employees Name :    %s" % (final_list[0]), pos=(20, 60))
+        self.text = wx.StaticText(self, label="e-Mail Address :    %s" % (final_list[1]), pos=(20, 120))
+        self.text = wx.StaticText(self, label="Role :              %s" % (final_list[2]), pos=(20, 180))
+        self.text = wx.StaticText(self, label="Current Employee (1=Yes 2=No):", pos=(20, 240))
+        self.active_eng = wx.ComboBox(self, pos=(350, 240), size=(50, -1), choices=active_list, value=final_list[3])
+        self.back_button = wx.Button(self, label="Back", pos=(220, 500))
+        self.back_button.Bind(wx.EVT_BUTTON, self.cancel_new_colleague)
+        self.save_button = wx.Button(self, label="Save", pos=(320, 500))
+        self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
+        self.Show()
+
+    def cancel_new_colleague(self, event):
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 450, "Manage Colleagues", ManageColleaguePanel)
+
+    def save_engineer_details(self, event):
+        new_active = self.active_eng.GetValue()
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.execute("UPDATE T1 SET active='%s' WHERE rowid='%s'" % (new_active, leaver_colleague_id))
+        con.commit()
+        con.close()
+        frame = self.GetParent()  # This assigns parent frame to frame.
+        frame.Close()  # This then closes frame removing the main menu.
+        frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
+
+
+
+
+
+
 ###########Frame Setups############
 
 # This creates the frame for the all menus.
