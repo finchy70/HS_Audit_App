@@ -8,7 +8,7 @@ import wx
 import sqlite3
 import datetime as dt
 from itertools import chain
-global question
+
 
 def get_columns(state):
     global my_list_col
@@ -414,10 +414,15 @@ class ReactivateLeaverPanel(wx.Panel):
         frame.Close()  # This then closes frame removing the main menu.
         frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
 
+#############################################################################
+#                            Question Panels                                #
+#############################################################################
 
 class VanAuditAnswersPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        global question
+        question = 0
         sizerControl = wx.GridBagSizer(hgap=4,vgap = 4)
         rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
         con = sqlite3.connect("hs_audit.sqlite")
@@ -434,7 +439,6 @@ class VanAuditAnswersPanel(wx.Panel):
             labels.extend(result.pop(0))
 
         #Create, layout and bind the RadioBoxes
-        question = 0
         for row, label in enumerate(labels):
             question += 1
             lbl = wx.StaticText(self)
@@ -456,7 +460,6 @@ class VanAuditAnswersPanel(wx.Panel):
 
     def onRadioBox(self, event):
         """Event handler for RadioBox.."""
-        global question
         rbox = event.GetEventObject()
         rboxLbl = rbox.GetLabel()
         answer = rbox.GetSelection()
@@ -470,7 +473,6 @@ class VanAuditAnswersPanel(wx.Panel):
 
     def save_answers(self, event):
         global running_question_total
-        global question
         running_question_total = 0
         print running_question_total
         print question
@@ -481,8 +483,9 @@ class VanAuditAnswersPanel(wx.Panel):
             global full_audit_answers
             full_audit_answers = {}
             running_question_total += question
-            for f in range ((running_question_total + 1) - question, running_question_total+1):
-                full_audit_answers[f] = aa[f]
+            for f in range ((running_question_total) - question, running_question_total):
+                print "f=%s" % (f)
+                full_audit_answers[f+1] = aa[f+1]
             frame = self.GetParent()  # This assigns parent frame to frame.
             frame.Close()  # This then closes frame removing the main menu.
             frame = SetUpFrame(600, 650, "Method Statement and RAMS.", RamsAuditAnswersPanel)
@@ -491,6 +494,7 @@ class VanAuditAnswersPanel(wx.Panel):
 class RamsAuditAnswersPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        question = 0
         sizerControl = wx.GridBagSizer(hgap=4,vgap = 4)
         rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
         con = sqlite3.connect("hs_audit.sqlite")
@@ -506,7 +510,6 @@ class RamsAuditAnswersPanel(wx.Panel):
             labels.extend(result.pop(0))
 
         #Create, layout and bind the RadioBoxes
-        question = 0
         for row, label in enumerate(labels):
             question += 1
             lbl = wx.StaticText(self)
@@ -533,35 +536,32 @@ class RamsAuditAnswersPanel(wx.Panel):
         rboxLbl = rbox.GetLabel()
         answer = rbox.GetSelection()
         question = rbox.GetId()
-        print rbox
-        print "rbox label = %s" % (rboxLbl)
-        print "Selection = %s" % (question)
-        print "Answer = %r" % (answer)
         aa[question+running_question_total] = answer
         print aa
 
     def save_answers(self, event):
         global running_question_total
-        global question
         print "The running total = %s" % (running_question_total+question)
         print "Questions so far = %s" % (question)
-        print "Range check is (%s, %s)." % ((running_question_total + 1) - question, running_question_total+1)
+        print "Range check is (%s, %s)." % ((running_question_total) - question, running_question_total)
         if len(aa) < (running_question_total + question): #Have all questions been answered
             return
 
         else:
             running_question_total += question
-            for f in range ((running_question_total + 1) - question, running_question_total+1):
-                full_audit_answers[f] = aa[f]
+            for f in range ((running_question_total) - question, running_question_total):
+                print "f=%s" % (f)
+                full_audit_answers[f+1] = aa[f+1]
                 print full_audit_answers
             frame = self.GetParent()  # This assigns parent frame to frame.
             frame.Close()  # This then closes frame removing the main menu.
-            frame = SetUpFrame(600, 500, "Method Statement and RAMS.", PpeAuditAnswersPanel)
+            frame = SetUpFrame(600, 500, "PPE Audit.", PpeAuditAnswersPanel)
 
 
 class PpeAuditAnswersPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        question = 0
         sizerControl = wx.GridBagSizer(hgap=4,vgap = 4)
         rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
         con = sqlite3.connect("hs_audit.sqlite")
@@ -613,27 +613,28 @@ class PpeAuditAnswersPanel(wx.Panel):
 
     def save_answers(self, event):
         global running_question_total
-        global question
         print running_question_total
         print "The running total = %s" % (running_question_total+question)
         print "Questions so far = %s" % (question)
-        print "Range check is (%s, %s)." % ((running_question_total + 1) - question, running_question_total+1)
+        print "Range check is (%s, %s)." % ((running_question_total) - question, running_question_total)
         if len(aa) < (running_question_total + question): #Have all questions been answered
             return
 
         else:
             running_question_total += question
-            for f in range ((running_question_total + 1) - question, running_question_total+1):
-                full_audit_answers[f] = aa[f]
+            for f in range ((running_question_total) - question, running_question_total):
+                print "f=%s" % (f)
+                full_audit_answers[f+1] = aa[f+1]
                 print full_audit_answers
             frame = self.GetParent()  # This assigns parent frame to frame.
             frame.Close()  # This then closes frame removing the main menu.
-            frame = SetUpFrame(600, 500, "Method Statement and RAMS.", ToolsAuditAnswersPanel)
+            frame = SetUpFrame(800, 500, "Tool Audit.", ToolsAuditAnswersPanel)
 
 
 class ToolsAuditAnswersPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        question = 0
         sizerControl = wx.GridBagSizer(hgap=4,vgap = 4)
         rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
         con = sqlite3.connect("hs_audit.sqlite")
@@ -649,7 +650,6 @@ class ToolsAuditAnswersPanel(wx.Panel):
             labels.extend(result.pop(0))
 
         #Create, layout and bind the RadioBoxes
-        question = 0
         for row, label in enumerate(labels):
             question += 1
             lbl = wx.StaticText(self)
@@ -661,7 +661,7 @@ class ToolsAuditAnswersPanel(wx.Panel):
 
         self.save_button = wx.Button(self, label="Save")
         self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-        sizerControl.Add(self.save_button, pos=(question+3, 5),
+        sizerControl.Add(self.save_button, pos=(question+2, 5),
                          flag=wx.EXPAND|wx.LEFT|wx.RIGHT,border=2)
         #Show()
         sizerMain = wx.BoxSizer()
@@ -685,26 +685,28 @@ class ToolsAuditAnswersPanel(wx.Panel):
 
     def save_answers(self, event):
         global running_question_total
-        global question
+
         print "The running total = %s" % (running_question_total+question)
         print "Questions so far = %s" % (question)
-        print "Range check is (%s, %s)." % ((running_question_total + 1) - question, running_question_total+1)
+        print "Range check is (%s, %s)." % ((running_question_total) - question, running_question_total)
         if len(aa) < (running_question_total + question): #Have all questions been answered
             return
 
         else:
             running_question_total += question
-            for f in range ((running_question_total + 1) - question, running_question_total+1):
-                full_audit_answers[f] = aa[f]
+            for f in range ((running_question_total) - question, running_question_total):
+                print "f=%s" % (f)
+                full_audit_answers[f+1] = aa[f+1]
                 print full_audit_answers
             frame = self.GetParent()  # This assigns parent frame to frame.
             frame.Close()  # This then closes frame removing the main menu.
-            frame = SetUpFrame(600, 500, "Method Statement and RAMS.", HvAuditAnswersPanel)
+            frame = SetUpFrame(800, 500, "HV works and Documentation.", HvAuditAnswersPanel)
 
 
 class HvAuditAnswersPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        question = 0
         sizerControl = wx.GridBagSizer(hgap=4,vgap = 4)
         rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
         con = sqlite3.connect("hs_audit.sqlite")
@@ -720,7 +722,6 @@ class HvAuditAnswersPanel(wx.Panel):
             labels.extend(result.pop(0))
 
         #Create, layout and bind the RadioBoxes
-        question = 0
         for row, label in enumerate(labels):
             question += 1
             lbl = wx.StaticText(self)
@@ -756,17 +757,17 @@ class HvAuditAnswersPanel(wx.Panel):
 
     def save_answers(self, event):
         global running_question_total
-        global question
         print "The running total = %s" % (running_question_total+question)
         print "Questions so far = %s" % (question)
-        print "Range check is (%s, %s)." % ((running_question_total + 1) - question, running_question_total+1)
+        print "Range check is (%s, %s)." % ((running_question_total) - question, running_question_total)
         if len(aa) < (running_question_total + question): #Have all questions been answered
             return
 
         else:
             running_question_total += question
-            for f in range ((running_question_total + 1) - question, running_question_total+1):
-                full_audit_answers[f] = aa[f]
+            for f in range ((running_question_total) - question, running_question_total):
+                print "f=%s" % (f)
+                full_audit_answers[f+1] = aa[f+1]
                 print full_audit_answers
             frame = self.GetParent()  # This assigns parent frame to frame.
             frame.Close()  # This then closes frame removing the main menu.
