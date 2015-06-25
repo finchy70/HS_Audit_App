@@ -164,14 +164,6 @@ class CreateAuditPanel(wx.Panel):
 		max_audit_ver = cur.fetchone()[0]
 		con.close()
 		audit_ver = max_audit_ver
-		####Database####
-		"""
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.execute('INSERT INTO T2 VALUES (?,?,?,?,?)',
-					(audit_engineer, audit_date, audit_site, audit_job_number, audit_ver))
-		con.commit()
-		con.close()
-		"""
 		####Kill Frame####
 		frame = self.GetParent()  # This assigns parent frame to frame.
 		frame.Close()  # This then closes frame removing the main menu.
