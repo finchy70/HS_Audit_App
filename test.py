@@ -1,16 +1,34 @@
 __author__ = 'Paul Finch'
 import wx
+import sqlite3
 
 
 class VanAuditPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        main_sizer = wx.GridBagSizer(5, 5)
-        main_sizer.Add(wx.StaticText(self, label="Van Audit Questions"), (0, 0), span=(1, 7), flag=wx.ALIGN_CENTER)
-        for n in range(1, 6):
-            print n
-            main_sizer.Add(wx.StaticText(self, label="Q%s" %(n)), (n, 0))
-        self.SetSizer(main_sizer)
+        font1 = wx.Font(20, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_SLANT, wx.FONTWEIGHT_BOLD)
+        text1 = "Van Audit Questions"
+        heading = wx.StaticText(self, -1, label=text1, style=wx.ALIGN_CENTER)
+        heading.SetFont(font1)
+        con = sqlite3.connect("hs_audit.sqlite")
+        con.text_factory = str
+        cur = con.cursor()
+        cur.execute("SELECT vaq1, vaq2, vaq3, vaq4 FROM T3 WHERE audit_ver =1")#, (change 1 to max_audit_id))
+        result = [[str(item) for item in results] for results in cur.fetchall()]
+        con.close()
+        questions = []
+        while result:
+            questions.extend(result.pop(0))
+        print questions
+        print type(questions)
+        audit_questions = wx.GridSizer(5,3)
+        question_number = 1
+
+            print "This is n :-  %s" %(n)
+            audit_questions.for n in questions:Add(wx.GridSizer(wx.StaticText(self, label="Q%r %r" % (question_number, n))))
+            audit_questions.Add(wx.StaticText(self, label=" "))
+            question_number += 1
+        self.SetSizer(audit_question)
 
 
 
