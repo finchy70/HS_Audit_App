@@ -9,7 +9,6 @@ global running_question_total
 global full_audit_answers
 full_audit_answers = ""
 
-
 def get_columns(state):
 	global my_list_col
 	global my_list_id
@@ -1073,10 +1072,22 @@ class SelectAuditPanel(wx.Panel):
 		second_sizer.AddStretchSpacer()
 		for f in range(0, len(final_data)-1, 4):
 			btn = wx.Button(self, label='Job Number :- %s.     Site :- %s.     Date :- %s.' % (final_data[f], final_data[f+1], final_data[f+2]), id = final_data[f+3], size=(500, 30))
+			btn.Bind(wx.EVT_BUTTON, self.on_button)
 			second_sizer.Add(btn, 0, wx.TEXT_ALIGNMENT_LEFT)
 		second_sizer.AddStretchSpacer()
 		main_sizer.Add(second_sizer, 0, wx.CENTER)
 		self.SetSizer(main_sizer)
+
+	def on_button(self, event):
+		audit_id_call = event.GetId()
+		frame = self.GetParent()  # This assigns parent frame to frame.
+		frame.Close()  # This then closes frame removing the main menu.
+		frame = SetUpAuditFrame(audit_id_call)
+
+
+
+
+
 
 
 ###################################
