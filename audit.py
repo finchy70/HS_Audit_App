@@ -1,5 +1,3 @@
-from pandas.core.common import _ABCGeneric
-
 __author__ = 'Paul Finch'
 
 import wx
