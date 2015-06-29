@@ -267,7 +267,7 @@ class PreviousAuditPanel(wx.Panel):
 			cur.execute("SELECT engineer FROM T1 WHERE rowid='%s'" % (colleague_row_id))
 			myList = [[str(item) for item in results] for results in cur.fetchall()]
 			con.close()
-			print myList
+
 			if colleague_row_id == 999:
 				frame = self.GetParent()  # This assigns parent frame to frame.
 				frame.Close()  # This then closes frame removing the main menu.
@@ -283,7 +283,17 @@ class PreviousAuditPanel(wx.Panel):
 				audit_colleague_name = cur.fetchall()
 				final_colleague_name = audit_colleague_name[0]
 				con.close()
-				frame = SelectAuditFrame(final_colleague_name)
+				con = sqlite3.connect("hs_audit.sqlite")
+				con.text_factory = str
+				cur = con.cursor()
+				cur.execute("SELECT audit_id FROM T2 WHERE engineer='%s'" % (colleague_row_id))
+				my_audits = [[str(item) for item in results] for results in cur.fetchall()]
+				con.close()
+				if len(my_audits) < 1:
+					Warn(self, "No Audit History!!")
+					frame = SetUpFrame(500, 700, "View Previous Audit - Select Colleague", PreviousAuditPanel)
+				else:
+					frame = SelectAuditFrame(final_colleague_name)
 
 # Creates Panel for adding a new colleague.
 class AddNewColleaguePanel(wx.Panel):
@@ -953,7 +963,6 @@ class AuditResultPanel(wx.Panel):
 		print variables_list
 		del variables_list[-1]
 		print variables_list
-		the_list = ['enigineer_id', 'audit_date', 'audit_site', 'job_number', 'audit_ver']
 		audit_engineer = variables_list[0]
 		audit_date = variables_list[1]
 		audit_site = variables_list[2]
