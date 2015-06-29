@@ -289,6 +289,7 @@ class PreviousAuditPanel(wx.Panel):
 				cur.execute("SELECT audit_id FROM T2 WHERE engineer='%s'" % (colleague_row_id))
 				my_audits = [[str(item) for item in results] for results in cur.fetchall()]
 				con.close()
+
 				if len(my_audits) < 1:
 					Warn(self, "No Audit History!!")
 					frame = SetUpFrame(500, 700, "View Previous Audit - Select Colleague", PreviousAuditPanel)
