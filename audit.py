@@ -4,9 +4,6 @@ import wx
 import sqlite3
 import datetime as dt
 
-#global running_question_total
-
-
 # This function gets a list of current or ex employees from db. State 2=all, 1=cur, and 0=leavers.
 def get_columns(state):
 	global my_list_col
