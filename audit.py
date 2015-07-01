@@ -55,7 +55,7 @@ def Warn(parent, message, caption = 'Warning!'):
 	dlg.ShowModal()
 	dlg.Destroy()
 
-#Function that converts lists in a list into one list.
+#Function that converts nested lists into one list.
 def traverse(o, tree_types=(list, tuple)):
 	if isinstance(o, tree_types):
 		for value in o:
