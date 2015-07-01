@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'Paul Finch'
 
 import wx
@@ -64,15 +65,21 @@ def traverse(o, tree_types=(list, tuple)):
 	else:
 		yield o
 
-
 ##################################
-##########Panel Set Ups###########
+##########Frame Setups############
 ##################################
 
 # This is the front main menu panel
-class FrontMenuPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
+class FrontMenuFrame(wx.Frame):
+	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
+		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
+		super(FrontMenuFrame, self).__init__(parent, title="EPS - Health and Safety Audit.", size=(500, 300))
+		self.InitUI()
+		self.Centre()
+		self.Show()
+
+	def InitUI(self):
+		panel = wx.Panel(self, 0)
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
 		btn1 = wx.Button(self, label='Create New Audit', size=(420, 60))
 		btn1.Bind(wx.EVT_BUTTON, self.create_audit)
@@ -92,24 +99,26 @@ class FrontMenuPanel(wx.Panel):
 		self.SetSizer(main_sizer)
 
 	def create_audit(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
 		frame = SetUpFrame(400, 500, "Create New Audit", CreateAuditPanel)
 
 	def manage_colleagues(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
 		frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
 
 	def view_audit(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
 		frame = SetUpFrame(500, 700, "View Previous Audit - Select Colleague", PreviousAuditPanel)
 
 	def close_app(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Destroy()  # This then closes frame removing the main menu and terminates app.
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()
 		exit('Good Bye')
+
+
 
 
 class ManageColleaguePanel(wx.Panel):
@@ -589,7 +598,7 @@ class ReactivateLeaverPanel(wx.Panel):
 
 
 #############################################################################
-#                            Question Panels                                #
+#############################Question Panels#################################
 #############################################################################
 
 class VanAuditAnswersPanel(wx.Panel):
@@ -1133,6 +1142,6 @@ class SelectAuditFrame(wx.Frame):
 # This kicks everything off by calling frame and starting the app loop.
 if __name__ == '__main__':
 	app = wx.App(False)
-	frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+	frame = FrontMenuFrame()
 	app.MainLoop()
 
