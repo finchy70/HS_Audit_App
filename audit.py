@@ -103,7 +103,6 @@ def traverse(o, tree_types=(list, tuple)):
 # This is the front main menu panel
 class FrontMenuFrame(wx.Frame):
 	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
-		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
 		super(FrontMenuFrame, self).__init__(parent, title="EPS - Health and Safety Audit.", size=(500, 300))
 		self.SetBackgroundColour("default")
 		self.InitUI()
@@ -763,8 +762,11 @@ class CreateQuestionsFrame(wx.Frame):
 				con = sqlite3.connect("hs_audit.sqlite")
 				cur = con.cursor()
 				answers_db = dict.values(aa)
-				answers_db += str(audit_id)
+				print answers_db
+				print str(audit_id)
+				answers_db += (str(audit_id))# adding 1 and 0 rather than 10
 				print type(answers_db)
+				print answers_db
 				audit_date = dt.date.today()
 				cur.execute('INSERT INTO T4 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (answers_db))
 				con.commit()
@@ -776,13 +778,20 @@ class CreateQuestionsFrame(wx.Frame):
 				con.close()
 				self.GetParent()  # This assigns parent frame to frame.
 				self.Close()  # This then closes frame removing the main menu.
-				frame = AuditResultFrame(self, audit_id)
+				frame = AuditResultFrame(audit_id)
 
 
-class AuditResultPanel(wx.Panel):
-	def __init__(self, parent, audit_id):
+class AuditResultFrame(wx.Frame):
+	def __init__(self, audit_id, parent = None):  # Pass frame height, width, name, and panel.
+		super(AuditResultFrame, self).__init__(parent, title="EPS - Audit Result.", size=(500, 300))
+		self.SetBackgroundColour("default")
 		self.audit_id = audit_id
-		wx.Panel.__init__(self, parent)
+		self.InitUI()
+		self.Centre()
+		self.Show()
+
+	def __init__(self):
+		panel = wx.Panel(self)
 		con = sqlite3.connect("hs_audit.sqlite")
 		con.text_factory = str
 		cur = con.cursor()
