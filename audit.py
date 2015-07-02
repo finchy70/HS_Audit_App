@@ -5,6 +5,11 @@ import wx
 import sqlite3
 import datetime as dt
 
+global aa
+aa = {}
+global labels
+labels = []
+
 # This function gets a list of current or ex employees from db. State 2=all, 1=cur, and 0=leavers.
 def get_columns(state):
 	global my_list_col
@@ -74,6 +79,7 @@ class FrontMenuFrame(wx.Frame):
 	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
 		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
 		super(FrontMenuFrame, self).__init__(parent, title="EPS - Health and Safety Audit.", size=(500, 300))
+		self.SetBackgroundColour("default")
 		self.InitUI()
 		self.Centre()
 		self.Show()
@@ -101,12 +107,12 @@ class FrontMenuFrame(wx.Frame):
 	def create_audit(self, event):
 		self.GetParent()  # This assigns parent frame to frame.
 		self.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(400, 500, "Create New Audit", CreateAuditPanel)
+		frame = CreateAuditFrame()
 
 	def manage_colleagues(self, event):
 		self.GetParent()  # This assigns parent frame to frame.
 		self.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(500, 300, "Manage Current Colleagues", ManageColleaguePanel)
+		frame = ManageColleagueFrame()
 
 	def view_audit(self, event):
 		self.GetParent()  # This assigns parent frame to frame.
@@ -121,9 +127,17 @@ class FrontMenuFrame(wx.Frame):
 
 
 
-class ManageColleaguePanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
+class ManageColleagueFrame(wx.Frame):
+	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
+		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
+		super(ManageColleagueFrame, self).__init__(parent, title="EPS - Manage Colleagues.", size=(500, 300))
+		self.SetBackgroundColour("default")
+		self.InitUI()
+		self.Centre()
+		self.Show()
+
+	def InitUI(self):
+		panel = wx.Panel(self)
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
 		btn1 = wx.Button(self, label="Add New Colleague", size=(420, 60))
 		btn1.Bind(wx.EVT_BUTTON, self.add_new_colleague)
@@ -142,30 +156,39 @@ class ManageColleaguePanel(wx.Panel):
 		self.SetSizer(main_sizer)
 
 	def add_new_colleague(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(400, 500, "Add New Colleague", AddNewColleaguePanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = CreateNewColleagueFrame()
 
 	def existing_colleague(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(600, 600, "Manage Existing Colleague", ManageExistingColleaguePanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = ManageColleagueFrame("existing")
 
 	def leaver_colleague(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(600, 600, "View Leavers", LeaverColleaguePanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = ManageColleagueFrame("leavers")
 
 	def main_menu(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = FrontMenuFrame()
 
 
 # This creates the panel for the Create New Audit Menu
-class CreateAuditPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
+class CreateAuditFrame(wx.Frame):
+
+	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
+		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
+		super(CreateAuditFrame, self).__init__(parent, title="EPS - Create New Audit.", size=(410, 500))
+		self.SetBackgroundColour("default")
+		self.InitUI()
+		self.Centre()
+		self.Show()
+
+	def InitUI(self):
+		panel = wx.Panel(self, 0)
 		self.lblname = wx.StaticText(self, label="Site Name :", pos=(20, 60))
 		self.site_name = wx.TextCtrl(self, pos=(170, 60), size=(170, -1))
 		self.lblname = wx.StaticText(self, label="Job Number (4 digits only)", pos=(20, 120))
@@ -206,15 +229,15 @@ class CreateAuditPanel(wx.Panel):
 		con.close()
 		audit_ver = max_audit_ver
 		####Kill Frame####
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(600, 500, "Van Audit", VanAuditAnswersPanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = CreateQuestionsFrame("Van Audit")
 
 	#Function to close frame on button event and return to main menu.
 	def cancel_audit_details(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = FrontMenuFrame()
 
 
 #This is the panel that displays all employees so previous audits can be viewed.
@@ -343,9 +366,15 @@ class SelectAuditPanel(wx.Panel):
 
 
 # Creates Panel for adding a new colleague.
-class AddNewColleaguePanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
+class CreateNewColleagueFrame(wx.Frame):
+	def __init__(self, parent=None):
+		super(CreateNewColleagueFrame, self).__init__(parent, title="EPS - Create New Colleague.", size=(300, 500))
+		self.SetBackgroundColour("default")
+		self.InitUI()
+		self.Centre()
+		self.Show()
+	def InitUI(self):
+		panel = wx.Panel(self, 0)
 		role_list = ["Management", "Electrician", "Trainee", "Fitter", "Labourer", "Sub Contractor"]
 		self.text = wx.StaticText(self, label="Employees Name :", pos=(20, 60))
 		self.engineer_name = wx.TextCtrl(self, pos=(170, 60), size=(170, -1))
@@ -359,9 +388,9 @@ class AddNewColleaguePanel(wx.Panel):
 		self.save_button.Bind(wx.EVT_BUTTON, self.save_engineer_details)
 
 	def cancel_new_colleague(self, event):
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(480, 450, "Manage Colleagues", ManageColleaguePanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = ManageColleagueFrame()
 
 	def save_engineer_details(self, event):
 		new_engineer = self.engineer_name.GetValue()
@@ -371,13 +400,13 @@ class AddNewColleaguePanel(wx.Panel):
 		con.execute('INSERT INTO T1 VALUES (?,?,?,?)', (new_engineer, new_email, new_role, 1))
 		con.commit()
 		con.close()
-		frame = self.GetParent()  # This assigns parent frame to frame.
-		frame.Close()  # This then closes frame removing the main menu.
-		frame = SetUpFrame(500, 300, "H&S Audit App", FrontMenuPanel)
+		self.GetParent()  # This assigns parent frame to frame.
+		self.Close()  # This then closes frame removing the main menu.
+		frame = FrontMenuFrame()
 
 
-class ManageExistingColleaguePanel(wx.Panel):
-	def __init__(self, parent):
+class DisplayColleagueFrame(wx.Frame):
+	def __init__(self, parent, state):
 		wx.Panel.__init__(self, parent)
 		top_sizer = wx.BoxSizer(wx.HORIZONTAL)
 		main_sizer1 = wx.BoxSizer(wx.VERTICAL)
@@ -386,7 +415,12 @@ class ManageExistingColleaguePanel(wx.Panel):
 		top_sizer.Add(main_sizer1)
 		top_sizer.Add(main_sizer2)
 		top_sizer.AddStretchSpacer()
-		get_columns("1")# Get amount of existing colleagues by passing "1" to get columns.
+		if state == "existing":
+			get_columns("1")# Get amount of existing colleagues by passing "1" to get columns.
+
+		else:
+			get_columns("2")
+
 		main_sizer1.AddStretchSpacer()
 		main_sizer2.AddStretchSpacer()
 
@@ -601,12 +635,26 @@ class ReactivateLeaverPanel(wx.Panel):
 #############################Question Panels#################################
 #############################################################################
 
-class VanAuditAnswersPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
-		global count
-		global question
-		question = 0
+class CreateQuestionsFrame(wx.Frame):
+
+	def __init__(self, area, parent=None):  # Pass frame height, width, name, and panel.
+		self.title = "EPS - %s" % (area)
+		super(CreateQuestionsFrame, self).__init__(parent, title = self.title, size=(800, 500))
+		self.area = area
+		self.SetBackgroundColour("default")
+		self.InitUI()
+		self.Centre()
+		self.Show()
+
+	def InitUI(self):
+		panel = wx.Panel(self, 0)
+		if self.area == "Van Audit":
+			global aa
+			aa = {}
+			global labels
+			labels = []
+			global question
+			question = 0
 		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
 		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
 		con = sqlite3.connect("hs_audit.sqlite")
@@ -617,32 +665,52 @@ class VanAuditAnswersPanel(wx.Panel):
 		temp_id = cur.fetchall()
 		max_audit_version = temp_id[0]
 		con.close()
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute("SELECT vaq1, vaq2, vaq3, vaq4, vaq5 FROM T3 WHERE audit_ver ='%s'" % (max_audit_version))
-		result = [[str(item) for item in results] for results in cur.fetchall()]
-		con.close()
-		global aa
-		aa = {}
-		global labels
-		labels = []
+		audit_questions = []
+		if self.area == "Van Audit":
+			audit_questions = ["vaq1", "vaq2", "vaq3", "vaq4", "vaq5"]
+		elif self.area == "Rams":
+			audit_questions = ["rq1", "rq2","rq3", "rq4", "rq5", "rq6", "rq7"]
+		elif self.area == "PPE":
+			audit_questions = ["ppeq1", "ppeq2","ppeq3", "ppeq4"]
+		elif self.area == "Tools":
+			audit_questions = ["tq1", "tq2","tq3", "tq4", "tq5"]
+		else:
+			audit_questions = ["hvq1", "hvq2", "hvq3", "hvq4", "hvq5"]
+
+		count = 0
+		result = []
+		for quest in audit_questions:
+			print type(quest)
+			con = sqlite3.connect("hs_audit.sqlite")
+			con.text_factory = str
+			cur = con.cursor()
+			cur.execute("SELECT ? FROM T3 WHERE audit_ver = 1",  (quest))
+			result = cur.fetchall()
+			con.close()
+			print "Question =%s" % (quest)
+			print "Audit Version =%s" % (max_audit_version)
+			print "The Count Is =%s" % (count)
+			print "The return from the DB is =%s" % (result)
+			labels += result
+			print "The list of questions so far =%s" % (labels)
+			count += 1
+
 		while result:
 			labels.extend(result.pop(0))
 
 		# Create, layout and bind the RadioBoxes
-		count = 0
+		box_count = 0
 		for row, label in enumerate(labels):
-			count += 1
+			box_count += 1
 			lbl = wx.StaticText(self)
-			rbox = wx.RadioBox(self, id=count, label="Q%r - %s" % (count, label), choices=rboxPick)
+			rbox = wx.RadioBox(self, id=box_count, label="Q%r - %s" % (box_count, label), choices=rboxPick)
 			rbox.SetSelection(3)
 			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
 			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
 							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
 		self.save_button = wx.Button(self, label="Save")
 		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(count + 3, 5),
+		sizerControl.Add(self.save_button, pos=(box_count + 3, 5),
 						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
 		# Show()
 		sizerMain = wx.BoxSizer()
@@ -676,7 +744,7 @@ class VanAuditAnswersPanel(wx.Panel):
 			return
 
 		else:
-			running_question_total += count
+			running_question_total += len(audit_questions)
 			for f in range((running_question_total) - count, running_question_total):
 				print "f=%s" % (f)
 				full_audit_answers[f + 1] = aa[f + 1]
@@ -1116,13 +1184,6 @@ class AuditResultPanel(wx.Panel):
 ###########Frame Setup############
 ###################################
 
-# This creates the frame for the all menus.
-class SetUpFrame(wx.Frame):
-	def __init__(self, fwide, fhigh, ftitle, Panel):  # Pass frame height, width, name, and panel.
-		wx.Frame.__init__(self, None, title=ftitle, size=(fwide, fhigh))
-		panel = Panel(self)
-		self.Centre()
-		self.Show()
 
 class SetUpAuditFrame(wx.Frame):
 	def __init__(self, audit_id):  # Pass frame height, width, name, and panel.
