@@ -661,11 +661,12 @@ class ReactivateLeaverPanel(wx.Panel):
 #############################################################################
 
 class CreateQuestionsFrame(wx.Frame):
-	def __init__(self, area, running_total = 0, position = 0, parent = None):  # Pass frame height, width, name, and panel.
+	def __init__(self, area, running_total = 0, aa={}, position = 0, parent = None):  # Pass frame height, width, name, and panel.
 		self.title = "EPS - %s" % (area)
 		super(CreateQuestionsFrame, self).__init__(parent, title = self.title, size=(800, 500))
 		self.running_total = running_total
 		self.area = area
+		self.aa = aa
 		self.position = position
 		self.SetBackgroundColour("default")
 		self.InitUI()
@@ -676,7 +677,6 @@ class CreateQuestionsFrame(wx.Frame):
 	def InitUI(self):
 		panel = wx.Panel(self)
 		if self.area == "Van Audit":
-			global aa
 			aa = {}
 			global labels
 			labels = []
@@ -703,8 +703,8 @@ class CreateQuestionsFrame(wx.Frame):
 			exit()
 
 		self.running_total += required_questions
-		print "Answers so far =%s" % aa
-		print "Number of answers so far=%s" %(len(aa))
+		print "Answers so far =%s" % self.aa
+		print "Number of answers so far=%s" %(len(self.aa))
 		print "Running Total = %s" %(self.running_total)
 		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
 		print "Range = %s to %s." % ((self.running_total- required_questions),self.running_total)
@@ -736,38 +736,39 @@ class CreateQuestionsFrame(wx.Frame):
 		question = rbox.GetId()
 		print "Question = %s" % (question)
 		print "Answer = %s" % (answer)
-		aa[question] = answer
-		print "Answers so far =%s" % aa
-		print "Number of answers so far=%s" %(len(aa))
+		self.aa[question] = answer
+		print "Answers so far =%s" % self.aa
+		print "Number of answers so far=%s" %(len(self.aa))
 
 	def save_answers(self, event):
-		print "Length of aa is %s, running total is %s." % (len(aa), self.running_total)
-		if len(aa) < (self.running_total):  # Have all questions been answered
+		print "Length of aa is %s, running total is %s." % (len(self.aa), self.running_total)
+		if len(self.aa) < (self.running_total):  # Have all questions been answered
 			Warn(self, "All answers have not been answered", caption = 'Warning!')
 			return
 
 		else:
-			self.running_total = len(aa)
+			self.running_total = len(self.aa)
 			self.GetParent()  # This assigns parent frame to frame.
 			self.Close()  # This then closes frame removing the main menu.
-			if len(aa) == 5:
-				frame = CreateQuestionsFrame("RAMS Audit", self.running_total)
-			elif len(aa) == 12:
-				frame = CreateQuestionsFrame("PPE Audit", self.running_total)
-			elif len(aa) == 16:
-				frame = CreateQuestionsFrame("Tools Audit", self.running_total)
-			elif len(aa) == 21:
-				frame = CreateQuestionsFrame("HV Documentation Audit", self.running_total)
+			if len(self.aa) == 5:
+				frame = CreateQuestionsFrame("RAMS Audit", self.running_total, self.aa)
+			elif len(self.aa) == 12:
+				frame = CreateQuestionsFrame("PPE Audit", self.running_total, self.aa)
+			elif len(self.aa) == 16:
+				frame = CreateQuestionsFrame("Tools Audit", self.running_total, self.aa)
+			elif len(self.aa) == 21:
+				frame = CreateQuestionsFrame("HV Documentation Audit", self.running_total, self.aa)
 			else:
-				con = sqlite3.connect("hs_audit.sqlite")
-				cur = con.cursor()
-				answers_db = dict.values(aa)
+				self.aa[len(self.aa) + 1] = audit_id
+				answers_db = dict.values(self.aa)
+				del self.aa
 				print answers_db
 				print str(audit_id)
-				answers_db += (str(audit_id))# adding 1 and 0 rather than 10
 				print type(answers_db)
 				print answers_db
 				audit_date = dt.date.today()
+				con = sqlite3.connect("hs_audit.sqlite")
+				cur = con.cursor()
 				cur.execute('INSERT INTO T4 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (answers_db))
 				con.commit()
 				con.close()
@@ -782,10 +783,10 @@ class CreateQuestionsFrame(wx.Frame):
 
 
 class AuditResultFrame(wx.Frame):
-	def __init__(self, audit_id, parent = None):  # Pass frame height, width, name, and panel.
+	def __init__(self, audit_no, parent = None,):
 		super(AuditResultFrame, self).__init__(parent, title="EPS - Audit Result.", size=(500, 300))
 		self.SetBackgroundColour("default")
-		self.audit_id = audit_id
+		self.audit_no = audit_no
 		self.InitUI()
 		self.Centre()
 		self.Show()
@@ -795,10 +796,7 @@ class AuditResultFrame(wx.Frame):
 		con = sqlite3.connect("hs_audit.sqlite")
 		con.text_factory = str
 		cur = con.cursor()
-		id_value = int(self.audit_id)
-		print id_value
-		print type(id_value)
-		cur.execute("SELECT * FROM T2 WHERE audit_id ='%s'" % (id_value))
+		cur.execute("SELECT * FROM T2 WHERE audit_id ='%s'" % (self.audit_no))
 		result = cur.fetchall()
 		con.close()
 		print "Result is %s" % (result)
@@ -846,7 +844,7 @@ class AuditResultFrame(wx.Frame):
 			final_questions.extend(questions_result.pop(0))
 		con = sqlite3.connect("hs_audit.sqlite")
 		cur = con.cursor()
-		cur.execute("SELECT * FROM T4 WHERE audit_id = '%s'" % (audit_id))
+		cur.execute("SELECT * FROM T4 WHERE audit_id = '%s'" % (self.audit_no))
 		answer_result = cur.fetchall()
 		con.close()
 		final_answers = []
@@ -891,7 +889,7 @@ class AuditResultFrame(wx.Frame):
 		self.sizerControl.Add(self.text, pos=(31, 3))
 		self.text = wx.StaticText(self, label="Audit ID        = ", style=wx.TEXT_ALIGNMENT_RIGHT)
 		self.sizerControl.Add(self.text, pos=(32, 7))
-		self.text = wx.StaticText(self, label=str(audit_id), style=wx.TEXT_ALIGNMENT_RIGHT)
+		self.text = wx.StaticText(self, label=str(self.audit_no), style=wx.TEXT_ALIGNMENT_RIGHT)
 		self.sizerControl.Add(self.text, pos=(32,8))
 		self.text = wx.Button(self, label="Close")
 		self.text.Bind(wx.EVT_BUTTON, self.close_audit)
@@ -909,7 +907,7 @@ class AuditResultFrame(wx.Frame):
 ###########Frame Setup############
 ###################################
 
-
+"""
 class SetUpAuditFrame(wx.Frame):
 	def __init__(self, audit_id):  # Pass frame height, width, name, and panel.
 		wx.Frame.__init__(self, None, title="Audit Result", size=(750, 700))
@@ -923,7 +921,7 @@ class SelectAuditFrame(wx.Frame):
 		panel = SelectAuditPanel(self, colleague_row_id)
 		self.Centre()
 		self.Show()
-
+"""
 
 # This kicks everything off by calling frame and starting the app loop.
 if __name__ == '__main__':
