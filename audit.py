@@ -4,6 +4,7 @@ __author__ = 'Paul Finch'
 import wx
 import sqlite3
 import datetime as dt
+from sqlalchemy.sql import select
 
 global aa
 aa = {}
@@ -242,7 +243,7 @@ class CreateAuditFrame(wx.Frame):
 
 #This is the panel that displays all employees so previous audits can be viewed.
 class PreviousAuditPanel(wx.Panel):
-		def __init__(self, parent):
+		def __init__(self, parent = None):
 			wx.Panel.__init__(self, parent)
 			# Set up panel to display previous audits.
 			top_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -637,7 +638,7 @@ class ReactivateLeaverPanel(wx.Panel):
 
 class CreateQuestionsFrame(wx.Frame):
 
-	def __init__(self, area, parent=None):  # Pass frame height, width, name, and panel.
+	def __init__(self, area, parent = None):  # Pass frame height, width, name, and panel.
 		self.title = "EPS - %s" % (area)
 		super(CreateQuestionsFrame, self).__init__(parent, title = self.title, size=(800, 500))
 		self.area = area
@@ -647,7 +648,7 @@ class CreateQuestionsFrame(wx.Frame):
 		self.Show()
 
 	def InitUI(self):
-		panel = wx.Panel(self, 0)
+		panel = wx.Panel(self)
 		if self.area == "Van Audit":
 			global aa
 			aa = {}
@@ -678,25 +679,19 @@ class CreateQuestionsFrame(wx.Frame):
 			audit_questions = ["hvq1", "hvq2", "hvq3", "hvq4", "hvq5"]
 
 		count = 0
-		result = []
 		for quest in audit_questions:
 			print type(quest)
 			con = sqlite3.connect("hs_audit.sqlite")
-			con.text_factory = str
 			cur = con.cursor()
-			cur.execute("SELECT ? FROM T3 WHERE audit_ver = 1",  (quest))
-			result = cur.fetchall()
+			cur.execute("SELECT '%s' FROM T3 WHERE audit_ver = '%s'" % (quest, max_audit_version))
+			result = cur.fetchone()
 			con.close()
 			print "Question =%s" % (quest)
 			print "Audit Version =%s" % (max_audit_version)
 			print "The Count Is =%s" % (count)
 			print "The return from the DB is =%s" % (result)
-			labels += result
-			print "The list of questions so far =%s" % (labels)
 			count += 1
-
-		while result:
-			labels.extend(result.pop(0))
+			print "The list of questions so far =%s" % (labels)
 
 		# Create, layout and bind the RadioBoxes
 		box_count = 0
