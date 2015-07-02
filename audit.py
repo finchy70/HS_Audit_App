@@ -5,13 +5,38 @@ import wx
 import sqlite3
 import datetime as dt
 from sqlalchemy.sql import select
+from sqlalchemy import create_engine
 
 global aa
-aa = {}
 global labels
-labels = []
+global running_total
+global full_audit_answers
+
 
 # This function gets a list of current or ex employees from db. State 2=all, 1=cur, and 0=leavers.
+def get_all_questions():
+	con = sqlite3.connect("hs_audit.sqlite")
+	con.text_factory = str
+	cur = con.cursor()
+	cur.execute("SELECT max(audit_ver) FROM T3")
+	temp_id = cur.fetchall()
+	max_audit_version = temp_id[0]
+	con.close()
+	con = sqlite3.connect("hs_audit.sqlite")
+	con.text_factory = str
+	cur = con.cursor()
+	cur.execute("SELECT * FROM T3 WHERE audit_ver = '%s'" % (max_audit_version))
+	result = cur.fetchall()
+	all_audit_questions = []
+	while result:
+		all_audit_questions.extend(result.pop(0))
+	print "Complete Return = %s" % (all_audit_questions)
+	del all_audit_questions[-1]
+	print "All questions = %s" % (all_audit_questions)
+	print type(all_audit_questions)
+	return all_audit_questions
+
+
 def get_columns(state):
 	global my_list_col
 	global my_list_id
@@ -232,7 +257,7 @@ class CreateAuditFrame(wx.Frame):
 		####Kill Frame####
 		self.GetParent()  # This assigns parent frame to frame.
 		self.Close()  # This then closes frame removing the main menu.
-		frame = CreateQuestionsFrame("Van Audit")
+		frame = CreateQuestionsFrame("Van Audit", 0)
 
 	#Function to close frame on button event and return to main menu.
 	def cancel_audit_details(self, event):
@@ -637,15 +662,17 @@ class ReactivateLeaverPanel(wx.Panel):
 #############################################################################
 
 class CreateQuestionsFrame(wx.Frame):
-
-	def __init__(self, area, parent = None):  # Pass frame height, width, name, and panel.
+	def __init__(self, area, running_total = 0, position = 0, parent = None):  # Pass frame height, width, name, and panel.
 		self.title = "EPS - %s" % (area)
 		super(CreateQuestionsFrame, self).__init__(parent, title = self.title, size=(800, 500))
+		self.running_total = running_total
 		self.area = area
+		self.position = position
 		self.SetBackgroundColour("default")
 		self.InitUI()
 		self.Centre()
 		self.Show()
+
 
 	def InitUI(self):
 		panel = wx.Panel(self)
@@ -656,405 +683,99 @@ class CreateQuestionsFrame(wx.Frame):
 			labels = []
 			global question
 			question = 0
-		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
+			global all_audit_questions
+			all_audit_questions = get_all_questions()
+			sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
 		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute("SELECT max(audit_ver) FROM T3")
-		global max_audit_version
-		temp_id = cur.fetchall()
-		max_audit_version = temp_id[0]
-		con.close()
-		audit_questions = []
+		#number of questions per section
+		global required_questions
 		if self.area == "Van Audit":
-			audit_questions = ["vaq1", "vaq2", "vaq3", "vaq4", "vaq5"]
-		elif self.area == "Rams":
-			audit_questions = ["rq1", "rq2","rq3", "rq4", "rq5", "rq6", "rq7"]
-		elif self.area == "PPE":
-			audit_questions = ["ppeq1", "ppeq2","ppeq3", "ppeq4"]
-		elif self.area == "Tools":
-			audit_questions = ["tq1", "tq2","tq3", "tq4", "tq5"]
+			self.running_total = 0
+			required_questions = 5
+		elif self.area == "RAMS Audit":
+			required_questions = 7
+		elif self.area == "PPE Audit":
+			required_questions = 4
+		elif self.area == "Tools Audit":
+			required_questions = 5
+		elif self.area == "HV Documentation Audit":
+			required_questions = 5
 		else:
-			audit_questions = ["hvq1", "hvq2", "hvq3", "hvq4", "hvq5"]
+			exit()
 
-		count = 0
-		for quest in audit_questions:
-			print type(quest)
-			con = sqlite3.connect("hs_audit.sqlite")
-			cur = con.cursor()
-			cur.execute("SELECT '%s' FROM T3 WHERE audit_ver = '%s'" % (quest, max_audit_version))
-			result = cur.fetchone()
-			con.close()
-			print "Question =%s" % (quest)
-			print "Audit Version =%s" % (max_audit_version)
-			print "The Count Is =%s" % (count)
-			print "The return from the DB is =%s" % (result)
-			count += 1
-			print "The list of questions so far =%s" % (labels)
-
-		# Create, layout and bind the RadioBoxes
-		box_count = 0
-		for row, label in enumerate(labels):
-			box_count += 1
+		self.running_total += required_questions
+		print "Answers so far =%s" % aa
+		print "Number of answers so far=%s" %(len(aa))
+		print "Running Total = %s" %(self.running_total)
+		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
+		print "Range = %s to %s." % ((self.running_total- required_questions),self.running_total)
+		for item in range(self.running_total - required_questions ,self.running_total):
 			lbl = wx.StaticText(self)
-			rbox = wx.RadioBox(self, id=box_count, label="Q%r - %s" % (box_count, label), choices=rboxPick)
+			print type(item)
+			print type(self.position)
+			print type (all_audit_questions)
+			rbox = wx.RadioBox(self, id=item, label="Q%r - %s" % (self.position + 1, all_audit_questions[item]), choices=rboxPick)
 			rbox.SetSelection(3)
 			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
-			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
+			sizerControl.Add(rbox, pos=(self.position + 1, 1), span=(1, 5),
 							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
+			self.position += 1
 		self.save_button = wx.Button(self, label="Save")
 		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(box_count + 3, 5),
+		sizerControl.Add(self.save_button, pos=(self.position + 3, 5),
 						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-		# Show()
+
 		sizerMain = wx.BoxSizer()
 		sizerMain.Add(sizerControl)
 		self.SetSizerAndFit(sizerMain)
 
+
 	def onRadioBox(self, event):
 		"""Event handler for RadioBox.."""
 		rbox = event.GetEventObject()
-		rboxLbl = rbox.GetLabel()
 		answer = rbox.GetSelection()
 		question = rbox.GetId()
-		print rbox
-		print "rbox label = %s" % (rboxLbl)
-		print "Selection = %s" % (question)
-		print "Answer = %r" % (answer)
+		print "Question = %s" % (question)
+		print "Answer = %s" % (answer)
 		aa[question] = answer
-		print aa
+		print "Answers so far =%s" % aa
+		print "Number of answers so far=%s" %(len(aa))
 
 	def save_answers(self, event):
-		global running_question_total
-		running_question_total = 0
-		global full_audit_answers
-		full_audit_answers = {}
-		print count
-		if len(aa) < (running_question_total + count):  # Have all questions been answered
-			print "NOT YET"
-			print "After assigning Van Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
+		print "Length of aa is %s, running total is %s." % (len(aa), self.running_total)
+		if len(aa) < (self.running_total):  # Have all questions been answered
+			Warn(self, "All answers have not been answered", caption = 'Warning!')
 			return
 
 		else:
-			running_question_total += len(audit_questions)
-			for f in range((running_question_total) - count, running_question_total):
-				print "f=%s" % (f)
-				full_audit_answers[f + 1] = aa[f + 1]
-			print "After assigning Van Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			frame = self.GetParent()  # This assigns parent frame to frame.
-			frame.Close()  # This then closes frame removing the main menu.
-			frame = SetUpFrame(600, 650, "Method Statement and RAMS.", RamsAuditAnswersPanel)
-
-
-class RamsAuditAnswersPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
-		global question
-
-		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
-		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute(
-			"SELECT rq1, rq2, rq3, rq4, rq5, rq6, rq7 FROM T3 WHERE audit_ver ='%s'" % (max_audit_version))
-		result = [[str(item) for item in results] for results in cur.fetchall()]
-		con.close()
-		aa = {}
-		global count
-		global labels
-		labels = []
-		while result:
-			labels.extend(result.pop(0))
-			print labels
-
-		# Create, layout and bind the RadioBoxes
-		count = 0
-		for row, label in enumerate(labels):
-			count += 1
-			print count
-			lbl = wx.StaticText(self)
-			rbox = wx.RadioBox(self, id=count, label="Q%r - %s" % (count, label), choices=rboxPick)
-			rbox.SetSelection(3)
-			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
-			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
-							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-
-		self.save_button = wx.Button(self, label="Save")
-		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(count + 3, 5),
-						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-		# Show()
-		sizerMain = wx.BoxSizer()
-		sizerMain.Add(sizerControl)
-		self.SetSizerAndFit(sizerMain)
-
-	def onRadioBox(self, event):
-		"""Event handler for RadioBox.."""
-		rbox = event.GetEventObject()
-		print rbox
-		question = rbox.GetId()
-		answer = rbox.GetSelection()
-		aa[question + running_question_total] = answer
-		print aa
-
-	def save_answers(self, event):
-		global running_question_total
-
-		if len(aa) < (running_question_total + count):  # Have all questions been answered
-			print "NOT YET"
-			print "After assigning Van Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			return
-
-		else:
-			running_question_total += count
-			print "After assigning Van Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			for f in range((running_question_total) - count, running_question_total):
-				print "f=%s" % (f)
-				full_audit_answers[f + 1] = aa[f + 1]
-				print full_audit_answers
-			frame = self.GetParent()  # This assigns parent frame to frame.
-			frame.Close()  # This then closes frame removing the main menu.
-			frame = SetUpFrame(600, 500, "PPE Audit.", PpeAuditAnswersPanel)
-
-
-class PpeAuditAnswersPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
-
-		global answered_question
-		answered_question = 0
-		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
-		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute("SELECT ppeq1, ppeq2, ppeq3, ppeq4 FROM T3 WHERE audit_ver ='%s'" % (max_audit_version))
-		result = [[str(item) for item in results] for results in cur.fetchall()]
-		con.close()
-		aa = {}
-		global count
-		global labels
-		labels = []
-		while result:
-			labels.extend(result.pop(0))
-
-		# Create, layout and bind the RadioBoxes
-		count = 0
-		for row, label in enumerate(labels):
-			count += 1
-			lbl = wx.StaticText(self)
-			rbox = wx.RadioBox(self, id=count, label="Q%r - %s" % (count, label), choices=rboxPick)
-			rbox.SetSelection(3)
-			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
-			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
-							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-
-		self.save_button = wx.Button(self, label="Save")
-		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(count + 3, 5),
-						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-		# Show()
-		sizerMain = wx.BoxSizer()
-		sizerMain.Add(sizerControl)
-		self.SetSizerAndFit(sizerMain)
-
-	def onRadioBox(self, event):
-		"""Event handler for RadioBox.."""
-		rbox = event.GetEventObject()
-		print rbox
-		question = rbox.GetId()
-		answer = rbox.GetSelection()
-		aa[question + running_question_total] = answer
-		print aa
-
-	def save_answers(self, event):
-		global running_question_total
-		print running_question_total
-		print "The running total = %s" % (running_question_total + count)
-		print "Questions so far = %s" % (count)
-		print "Range check is (%s, %s)." % ((running_question_total) - count, running_question_total)
-		if len(aa) < (running_question_total + count):  # Have all questions been answered
-			print "NOT YET"
-			print "After assigning RAMS Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			return
-
-		else:
-			running_question_total += count
-			for f in range((running_question_total) - count, running_question_total):
-				print "f=%s" % (f)
-				full_audit_answers[f + 1] = aa[f + 1]
-				print full_audit_answers
-			frame = self.GetParent()  # This assigns parent frame to frame.
-			frame.Close()  # This then closes frame removing the main menu.
-			frame = SetUpFrame(800, 500, "Tool Audit.", ToolsAuditAnswersPanel)
-
-
-class ToolsAuditAnswersPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
-		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
-		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute("SELECT tq1, tq2, tq3, tq4, tq5 FROM T3 WHERE audit_ver ='%s'" % (max_audit_version))
-		result = [[str(item) for item in results] for results in cur.fetchall()]
-		con.close()
-		aa = {}
-		global labels
-		global count
-		labels = []
-		while result:
-			labels.extend(result.pop(0))
-
-		# Create, layout and bind the RadioBoxes
-		count = 0
-		for row, label in enumerate(labels):
-			count += 1
-			rbox = wx.RadioBox(self, id=count, label="Q%r - %s" % (count, label), choices=rboxPick)
-			rbox.SetSelection(3)
-			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
-			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
-							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-
-		self.save_button = wx.Button(self, label="Save")
-		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(count + 2, 5),
-						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-		# Show()
-		sizerMain = wx.BoxSizer()
-		sizerMain.Add(sizerControl)
-		self.SetSizerAndFit(sizerMain)
-
-	def onRadioBox(self, event):
-		"""Event handler for RadioBox.."""
-		rbox = event.GetEventObject()
-		question = rbox.GetId()
-		answer = rbox.GetSelection()
-		aa[question + running_question_total] = answer
-		print aa
-
-	def save_answers(self, event):
-		global running_question_total
-		print "The running total = %s" % (running_question_total + count)
-		print "Questions so far = %s" % (count)
-		print "Range check is (%s, %s)." % ((running_question_total) - count, running_question_total)
-		if len(aa) < (running_question_total + count):  # Have all questions been answered
-			print "NOT YET"
-			print "After assigning RAMS Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round???? =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			return
-
-		else:
-			running_question_total += count
-			for f in range((running_question_total) - count, running_question_total):
-				print "f=%s" % (f)
-				full_audit_answers[f + 1] = aa[f + 1]
-				print full_audit_answers
-			frame = self.GetParent()  # This assigns parent frame to frame.
-			frame.Close()  # This then closes frame removing the main menu.
-			frame = SetUpFrame(800, 500, "HV works and Documentation.", HvAuditAnswersPanel)
-
-
-class HvAuditAnswersPanel(wx.Panel):
-	def __init__(self, parent):
-		wx.Panel.__init__(self, parent)
-		sizerControl = wx.GridBagSizer(hgap=4, vgap=4)
-		rboxPick = ["Yes", "No", "N/A", "Not answered yet"]
-		con = sqlite3.connect("hs_audit.sqlite")
-		con.text_factory = str
-		cur = con.cursor()
-		cur.execute("SELECT hvq1, hvq2, hvq3, hvq4, hvq5 FROM T3 WHERE audit_ver ='%s'" % (max_audit_version))
-		result = [[str(item) for item in results] for results in cur.fetchall()]
-		con.close()
-		aa = {}
-		global labels
-		global count
-		labels = []
-		while result:
-			labels.extend(result.pop(0))
-
-		# Create, layout and bind the RadioBoxes
-		count = 0
-		for row, label in enumerate(labels):
-			count += 1
-			lbl = wx.StaticText(self)
-			rbox = wx.RadioBox(self, id=count, label="Q%r - %s" % (count, label), choices=rboxPick)
-			rbox.SetSelection(3)
-			self.Bind(wx.EVT_RADIOBOX, self.onRadioBox, rbox)
-			sizerControl.Add(rbox, pos=(row + 1, 1), span=(1, 5),
-							 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-
-		self.save_button = wx.Button(self, label="Save")
-		self.save_button.Bind(wx.EVT_BUTTON, self.save_answers)
-		sizerControl.Add(self.save_button, pos=(count + 3, 5),
-						 flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=2)
-		# Show()
-		sizerMain = wx.BoxSizer()
-		sizerMain.Add(sizerControl)
-		self.SetSizerAndFit(sizerMain)
-
-	def onRadioBox(self, event):
-		"""Event handler for RadioBox.."""
-		rbox = event.GetEventObject()
-		print rbox
-		question = rbox.GetId()
-		answer = rbox.GetSelection()
-		aa[question + running_question_total] = answer
-		print aa
-
-	def save_answers(self, event, null=0):
-		global running_question_total
-		print "The running total = %s" % (running_question_total + count)
-		print "Questions so far = %s" % (count)
-		print "Range check is (%s, %s)." % ((running_question_total) - count, running_question_total)
-
-		if len(aa) < (running_question_total + count):  # Have all questions been answered
-			print "NOT YET"
-			print "After assigning RAMS Audit running Question total=%s" % (running_question_total)
-			print "The number of questions in this round???? =%s " % (count)
-			print "Full list of answers currently looks like this. %s" % (full_audit_answers)
-			return
-
-		else:
-			running_question_total += count
-			for f in range((running_question_total) - count, running_question_total):
-				print "f=%s" % (f)
-				full_audit_answers[f + 1] = aa[f + 1]
-				print full_audit_answers
-
-			cols = len(full_audit_answers)
-			print "The length of answer list is %s" % (cols)
-			full_audit_answers[cols + 1] = audit_id
-			con = sqlite3.connect("hs_audit.sqlite")
-			cur = con.cursor()
-			print type(full_audit_answers)
-			answers_db = dict.values(full_audit_answers)
-			print type(answers_db)
-			audit_date = dt.date.today()
-			cur.execute('INSERT INTO T4 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', answers_db)
-			con.commit()
-			con.close()
-			con = sqlite3.connect("hs_audit.sqlite")
-			con.execute('INSERT INTO T2 VALUES (?,?,?,?,?,?)',
-						(audit_engineer, audit_date, audit_site, audit_job_number, audit_ver, audit_id))
-			con.commit()
-			con.close()
-			frame = self.GetParent()  # This assigns parent frame to frame.
-			frame.Close()  # This then closes frame removing the main menu.
+			self.running_total = len(aa)
+			self.GetParent()  # This assigns parent frame to frame.
+			self.Close()  # This then closes frame removing the main menu.
+			if len(aa) == 5:
+				frame = CreateQuestionsFrame("RAMS Audit", self.running_total)
+			elif len(aa) == 12:
+				frame = CreateQuestionsFrame("PPE Audit", self.running_total)
+			elif len(aa) == 16:
+				frame = CreateQuestionsFrame("Tools Audit", self.running_total)
+			elif len(aa) == 21:
+				frame = CreateQuestionsFrame("HV Documentation Audit", self.running_total)
+			else:
+				con = sqlite3.connect("hs_audit.sqlite")
+				cur = con.cursor()
+				answers_db = dict.values(aa)
+				answers_db += "1"
+				print type(answers_db)
+				audit_date = dt.date.today()
+				cur.execute('INSERT INTO T4 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (answers_db))
+				con.commit()
+				con.close()
+				con = sqlite3.connect("hs_audit.sqlite")
+				con.execute('INSERT INTO T2 VALUES (?,?,?,?,?,?)',
+							(audit_engineer, audit_date, audit_site, audit_job_number, audit_ver, audit_id))
+				con.commit()
+				con.close()
+				frame = self.GetParent()  # This assigns parent frame to frame.
+				frame.Close()  # This then closes frame removing the main menu.
 			frame = SetUpAuditFrame(audit_id)
 
 
