@@ -763,7 +763,7 @@ class CreateQuestionsFrame(wx.Frame):
 				con = sqlite3.connect("hs_audit.sqlite")
 				cur = con.cursor()
 				answers_db = dict.values(aa)
-				answers_db += "1"
+				answers_db += str(audit_id)
 				print type(answers_db)
 				audit_date = dt.date.today()
 				cur.execute('INSERT INTO T4 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (answers_db))
@@ -774,9 +774,9 @@ class CreateQuestionsFrame(wx.Frame):
 							(audit_engineer, audit_date, audit_site, audit_job_number, audit_ver, audit_id))
 				con.commit()
 				con.close()
-				frame = self.GetParent()  # This assigns parent frame to frame.
-				frame.Close()  # This then closes frame removing the main menu.
-			frame = SetUpAuditFrame(audit_id)
+				self.GetParent()  # This assigns parent frame to frame.
+				self.Close()  # This then closes frame removing the main menu.
+				frame = AuditResultFrame(self, audit_id)
 
 
 class AuditResultPanel(wx.Panel):
