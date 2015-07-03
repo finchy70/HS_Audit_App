@@ -38,7 +38,8 @@ def get_all_questions():
 	print type(all_audit_questions)
 	return all_audit_questions
 
-
+#This function returns the row id's of table T2. Options are all rows,
+# existing colleague rows, or leaver colleague rows.
 def get_columns(state):
 	global my_list_col
 	global my_list_id
@@ -72,7 +73,9 @@ def get_columns(state):
 
 ################################################
 ###Functions to display various message boxes###
+#####some not used but could be introduced######
 ################################################
+
 def YesNo(parent, question, caption = 'Yes or no?'):
 	dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
 	result = dlg.ShowModal() == wx.ID_YES
@@ -151,7 +154,7 @@ class FrontMenuFrame(wx.Frame):
 		self.Close()
 		exit('Good Bye')
 
-
+#This is the menu for all colleague management options.
 class ManageColleagueFrame(wx.Frame):
 	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
 		#wx.Frame.__init__(self, None, title="EPS - Health and Safety Audit.", size=(500, 300))
@@ -201,7 +204,7 @@ class ManageColleagueFrame(wx.Frame):
 		frame = FrontMenuFrame()
 
 
-# This creates the panel for the Create New Audit Menu
+# This allows th user to set up a new audit by collecting the required data.
 class CreateAuditFrame(wx.Frame):
 
 	def __init__(self, parent=None):  # Pass frame height, width, name, and panel.
@@ -264,7 +267,7 @@ class CreateAuditFrame(wx.Frame):
 		self.Close()  # This then closes frame removing the main menu.
 		frame = FrontMenuFrame()
 
-
+#Displays a list of all audits completed on specified colleague.
 class SelectAuditFrame(wx.Frame):
 	def __init__(self, colleague_name, parent=None):
 		self.colleague_name = colleague_name
@@ -317,7 +320,7 @@ class SelectAuditFrame(wx.Frame):
 		frame = FrontMenuFrame()
 
 
-# Creates Panel for adding a new colleague.
+#Allows the user to add a new colleague..
 class CreateNewColleagueFrame(wx.Frame):
 	def __init__(self, parent=None):
 		super(CreateNewColleagueFrame, self).__init__(parent, title="EPS - Create New Colleague.", size=(450, 500))
@@ -357,7 +360,8 @@ class CreateNewColleagueFrame(wx.Frame):
 		self.Close()  # This then closes frame removing the main menu.
 		frame = FrontMenuFrame()
 
-
+#This laysout the screen when a call is made to display buttons for specified groups of colleagues.
+#It checks for single, odd, or even amount of colleagus and lays out the screen accordinly.
 class DisplayColleagueFrame(wx.Frame):
 	def __init__(self, state, parent=None):
 		super(DisplayColleagueFrame, self).__init__(parent, title="EPS - Edit Colleague.", size=(500, 650))
@@ -427,6 +431,7 @@ class DisplayColleagueFrame(wx.Frame):
 	def detect_on_button(self, event):
 		global colleague_row_id
 		colleague_row_id = event.GetId()
+		#This checks what class called the layout of colleagues and returns the correct data to the correct class.
 		if self.state == "audit":
 			if colleague_row_id == 999:
 				self.GetParent()  # This assigns parent frame to frame.
