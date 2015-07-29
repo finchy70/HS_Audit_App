@@ -4,8 +4,6 @@ __author__ = 'Paul Finch'
 import wx
 import sqlite3
 import datetime as dt
-from sqlalchemy.sql import select
-from sqlalchemy import create_engine
 
 global aa
 global labels
