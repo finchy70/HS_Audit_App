@@ -4,6 +4,8 @@ __author__ = 'Paul Finch'
 import wx
 import sqlite3
 import datetime as dt
+import datetime
+import win32com.client as win32
 
 global aa
 global labels
@@ -665,10 +667,15 @@ class AuditResultFrame(wx.Frame):
         print variables_list
         del variables_list[-1]
         print variables_list
+        global audit_engineer
         audit_engineer = variables_list[0]
+        global audit_date
         audit_date = variables_list[1]
+        global audit_site
         audit_site = variables_list[2]
+        global job_number
         job_number = variables_list[3]
+        global audit_ver
         audit_ver = variables_list[4]
         print audit_engineer
         self.sizerControl = wx.GridBagSizer(hgap=0, vgap=1)
@@ -698,6 +705,7 @@ class AuditResultFrame(wx.Frame):
         cur.execute("SELECT * FROM T3 WHERE audit_ver = '%s'" % (audit_ver))
         questions_result = [[str(item) for item in results] for results in cur.fetchall()]
         con.close()
+        global final_questions
         final_questions = []
         while questions_result:
             final_questions.extend(questions_result.pop(0))
@@ -706,6 +714,7 @@ class AuditResultFrame(wx.Frame):
         cur.execute("SELECT * FROM T4 WHERE audit_id = '%s'" % (self.audit_no))
         answer_result = cur.fetchall()
         con.close()
+        global final_answers
         final_answers = []
         while answer_result:
             final_answers.extend(answer_result.pop(0))
@@ -714,23 +723,23 @@ class AuditResultFrame(wx.Frame):
         correct = 0
         wrong = 0
         not_app = 0
-        for q in range(1 , len(final_questions)):
+        for q in range(0 , len(final_questions)):
             self.text = wx.StaticText(self, label=final_questions[q], style=wx.TEXT_ALIGNMENT_RIGHT)
-            self.sizerControl.Add(self.text, pos=(q+3, 2), span=(1,6), flag=wx.EXPAND)
+            self.sizerControl.Add(self.text, pos=(q+4, 2), span=(1,6), flag=wx.EXPAND)
 
             if final_answers[q] == 0:
                 self.text = wx.StaticText(self, label="Yes", style=wx.TEXT_ALIGNMENT_RIGHT)
-                self.sizerControl.Add(self.text, pos=(q+3, 8), flag=wx.EXPAND)
+                self.sizerControl.Add(self.text, pos=(q+4, 8), flag=wx.EXPAND)
                 correct += 1
 
             elif final_answers[q] == 1:
                 self.text = wx.StaticText(self, label="No", style=wx.TEXT_ALIGNMENT_RIGHT)
-                self.sizerControl.Add(self.text, pos=(q+3, 8), flag=wx.EXPAND)
+                self.sizerControl.Add(self.text, pos=(q+4, 8), flag=wx.EXPAND)
                 wrong += 1
 
             else:
                 self.text = wx.StaticText(self, label="N/A", style=wx.TEXT_ALIGNMENT_RIGHT)
-                self.sizerControl.Add(self.text, pos=(q+3, 8), flag=wx.EXPAND)
+                self.sizerControl.Add(self.text, pos=(q+4, 8), flag=wx.EXPAND)
                 not_app += 1
 
         applic = wrong + correct
@@ -748,12 +757,15 @@ class AuditResultFrame(wx.Frame):
         self.text.SetFont(font2)
         self.sizerControl.Add(self.text, pos=(31, 3))
         self.text = wx.StaticText(self, label="Audit ID        = ", style=wx.TEXT_ALIGNMENT_RIGHT)
-        self.sizerControl.Add(self.text, pos=(32, 7))
+        self.sizerControl.Add(self.text, pos=(32, 5))
         self.text = wx.StaticText(self, label=str(self.audit_no), style=wx.TEXT_ALIGNMENT_RIGHT)
         self.sizerControl.Add(self.text, pos=(32,8))
         self.text = wx.Button(self, label="Close")
         self.text.Bind(wx.EVT_BUTTON, self.close_audit)
         self.sizerControl.Add(self.text, pos=(33, 7))
+        self.text = wx.Button(self, label="Excel")
+        self.text.Bind(wx.EVT_BUTTON, self.excel_audit)
+        self.sizerControl.Add(self.text, pos=(33, 2))
         self.SetSizer(self.sizerControl)
         self.Show()
 
@@ -762,6 +774,50 @@ class AuditResultFrame(wx.Frame):
         self.Close()  # This then closes frame removing the main menu.
         frame = FrontMenuFrame()
 
+    def excel_audit(self,event):
+        self.GetParent()  # This assigns parent frame to frame.
+        self.Close()  # This then closes frame removing the main menu.
+        frame = ExcelAudit(audit_engineer, audit_date, audit_site, job_number, audit_ver, self.audit_no,
+                           final_questions, final_answers)
+
+class ExcelAudit(wx.Frame):
+    def __init__(self,audit_engineer, audit_date, audit_site, job_number, audit_ver,
+                 audit_no, final_questions, final_answers, parent=None):
+        super(ExcelAudit, self).__init__(parent, title="Create Report", size=(600, 675))
+        self.audit_engineer = audit_engineer
+        self.audit_date = audit_date
+        self.audit_site = audit_site
+        self.job_number = job_number
+        self.audit_ver = audit_ver
+        self.audit_no = audit_no
+        self.final_questions = final_questions
+        self.final_answers = final_answers
+        self.InitUI()
+        self.Centre()
+        self.Show()
+
+    def InitUI(self):
+        panel = wx.Panel
+        excel = win32.gencache.EnsureDispatch('Excel.Application')
+        wb = excel.Workbooks.Open(r'C:\Excel Audit\Excelaudit.xlsx')
+        ws = wb.Worksheets("Sheet1")
+        excel.Visible = True
+        ws.Range("D2").Value = self.audit_engineer
+        ws.Range("D3").Value = self.audit_site
+        ws.Range("D4").Value = self.audit_date
+        ws.Range("D5").Value = self.audit_no
+        ws.Range("D6").Value = "EPS-%s" %(self.job_number)
+        for t in range(0,len(self.final_questions)):
+            ws.Range("B%s" % (t+9)).Value = self.final_questions[t]
+            if self.final_answers[t] == 0:
+                ws.Range("M%s" % (t+9)).Value = "Yes"
+            elif self.final_answers[t] == 1:
+                ws.Range("M%s" % (t+9)).Value = "No"
+            else:
+                ws.Range("M%s" % (t+9)).Value = "N/A"
+        self.GetParent()  # This assigns parent frame to frame.
+        self.Close()  # This then closes frame removing the main menu.
+        frame = FrontMenuFrame()
 
 # This kicks everything off by calling frame and starting the app loop.
 if __name__ == '__main__':
