@@ -780,7 +780,7 @@ class AuditResultFrame(wx.Frame):
         frame = ExcelAudit(audit_engineer, audit_date, audit_site, job_number, audit_ver, self.audit_no,
                            final_questions, final_answers)
 
-class ExcelAudit(wx.Frame):
+class ExcelAudit(wx.Frame): #Export Audit result to Excel for printing.
     def __init__(self,audit_engineer, audit_date, audit_site, job_number, audit_ver,
                  audit_no, final_questions, final_answers, parent=None):
         super(ExcelAudit, self).__init__(parent, title="Create Report", size=(600, 675))
